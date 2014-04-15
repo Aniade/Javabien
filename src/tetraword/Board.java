@@ -14,6 +14,7 @@ import javax.swing.Timer;
 
 import tetraword.Shape.Tetrominoes;
 
+@SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
@@ -31,7 +32,7 @@ public class Board extends JPanel implements ActionListener {
     char[] letters;
     
 
-    public Board(Tetraword parent) {
+    public Board(GameFrame parent) {
 
        setFocusable(true);
        curPiece = new Shape();
