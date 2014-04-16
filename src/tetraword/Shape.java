@@ -10,9 +10,11 @@ public class Shape {
                		   TShape, SquareShape, LShape, MirroredLShape };
 
     private Tetrominoes pieceShape;
-    public char pieceLetter;
+    private char pieceLetter;
     private int coords[][];
     private int[][][] coordsTable;
+    
+    private int id;
     
     
     // Constructeur
@@ -43,16 +45,15 @@ public class Shape {
         pieceShape = shape;
     }
     
-    public void setLetter(char letter) {
-    	pieceLetter = letter;
-    }
-
+    public void setLetter(char letter) { pieceLetter = letter; }
+    public void setId(int id) { this.id = id; }
     private void setX(int index, int x) { coords[index][0] = x; }
     private void setY(int index, int y) { coords[index][1] = y; }
     public int x(int index) { return coords[index][0]; }
     public int y(int index) { return coords[index][1]; }
     public Tetrominoes getShape()  { return pieceShape; }
-    public char getLetter()  { return pieceLetter; }
+    public char getLetter() { return pieceLetter; }
+    public int getId() { return id; }
 
     public void setRandomShape()
     {

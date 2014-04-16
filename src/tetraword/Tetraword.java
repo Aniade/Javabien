@@ -3,6 +3,7 @@ package tetraword;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -10,75 +11,90 @@ import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
 public class Tetraword extends JFrame implements ActionListener {
-	JLabel statusbar;
-	JButton startG,exitG;
-    JPanel panel;
-
+	
+	private JPanel panel;
+	/*private JLabel statusbar;*/
+	private JButton bt_start, bt_continue, bt_help, bt_preference,bt_exit;
+    private ImageIcon ii;
+    private JLabel picture;
+	
+	
     public Tetraword() {
     	panel = new JPanel();
-        panel.setLayout(null);
-        panel.setOpaque(false);
-        panel.setSize(200,400);
-        getContentPane().add(panel);        
+    	panel.setLayout(null);
+    	panel.setOpaque(false);
+    	panel.setSize(525,700);
+        getContentPane().add(panel);  
         
-        //Start Game Button
-        startG = new JButton("Start Game");
-        startG.setBounds(50, 100, 100, 30);
-        startG.setFocusable(false);
-        panel.add(startG);
-                
+        //Bouton Nouvelle Partie
+        bt_start = new JButton("Nouvelle Partie");
+        bt_start.setBounds(140, 200, 250, 30);
+        bt_start.setFocusable(false);
+        panel.add(bt_start);
         
-        //Exit Game Button
-        exitG = new JButton("Exit Game");
-        exitG.setBounds(50,200,100,30);
-        exitG.setFocusable(false);
-        panel.add(exitG);
-    	
-        //En jeu
-    	/*statusbar = new JLabel(" 0");
-    	add(statusbar, BorderLayout.SOUTH);
-    	Board board = new Board(this);
-        add(board);
-        board.start();*/
+        //Bouton Continuer
+        bt_continue = new JButton("Continuer");
+        bt_continue.setBounds(140, 250, 250, 30);
+        bt_continue.setFocusable(false);
+        panel.add(bt_continue);
         
-        startG.addActionListener(this);
-        exitG.addActionListener(this);
+        //Bouton Aide
+        bt_help = new JButton("Aide");
+        bt_help.setBounds(140, 300, 250, 30);
+        bt_help.setFocusable(false);
+        panel.add(bt_help);
+        
+        //Bouton Preferences
+        bt_preference = new JButton("Préférences");
+        bt_preference.setBounds(140, 350, 250, 30);
+        bt_preference.setFocusable(false);
+        panel.add(bt_preference);      
+        
+        //Bouton Quitter
+        bt_exit = new JButton("Quitter");
+        bt_exit.setBounds(140,400,250,30);
+        bt_exit.setFocusable(false);
+        panel.add(bt_exit);
+        
+     	// Ajout d'une image de fond
+        ii = new ImageIcon(this.getClass().getResource("pictures/bg_accueil.jpg"));
+        picture = new JLabel(new ImageIcon(ii.getImage()));
+        add(picture);   
 
-        setTitle("Tetraword - Menu principal");
-        setSize(200, 420);
+        bt_start.addActionListener(this);
+        bt_exit.addActionListener(this);
+        
+        setTitle("Tetraword");        
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setSize(525,700);
         setResizable(false);
         setVisible(true);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        
-        // Son
-        /*Sound sound = new Sound();
-        sound.readAudioFile("country.mp3");*/
    }
 
-   public JLabel getStatusBar() {
+   /*public JLabel getStatusBar() {
        return statusbar;
-   }
+   }*/
 
-    public static void main(String[] args) {
-        Tetraword menu = new Tetraword();
-        menu.setLocationRelativeTo(null);
-        menu.setVisible(true);
-    }
-    
-    public void actionPerformed(ActionEvent e)
-    {
-        if(e.getSource() == startG)
-        {            
-        	System.out.println("New Game - button is working");
-        	GameFrame game = new GameFrame();
-        	game.setLocationRelativeTo(null);
-            game.setVisible(true);
-            this.dispose();
-        }
-        else if(e.getSource() == exitG)
-        {
-            System.exit(0);
-        }
-    }
+   public static void main(String[] args) {
+       Tetraword menu = new Tetraword();
+       menu.setLocationRelativeTo(null);
+       menu.setVisible(true);
+   }
+   
+   public void actionPerformed(ActionEvent e)
+   {
+       if(e.getSource() == bt_start)
+       {            
+       	System.out.println("Lancement d'une nouvelle partie");
+       	GameFrame game = new GameFrame();
+       	game.setLocationRelativeTo(null);
+           game.setVisible(true);
+           this.dispose();
+       }
+       else if(e.getSource() == bt_exit)
+       {
+           System.exit(0);
+       }
+   }
 }

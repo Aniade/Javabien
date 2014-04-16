@@ -1,4 +1,4 @@
-package tetraword;import java.awt.BorderLayout;
+package tetraword;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -9,21 +9,25 @@ public class GameFrame extends JFrame {
     JLabel statusbar;
 
     public GameFrame() {
-
-        statusbar = new JLabel(" 0");
-        add(statusbar, BorderLayout.SOUTH);
+        /*statusbar = new JLabel(" 0");
+        add(statusbar, BorderLayout.SOUTH);*/
         Board board = new Board(this);
         add(board);
         board.start();
 
-        setSize(200, 400);
+        setSize(525, 700);
         setTitle("Tetris");
+        setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        
+        /*new SoundClipTest();*/
+        /*Sound ghost = new Sound();
+        ghost.playSound("729.wav");*/
    }
 
-   public JLabel getStatusBar() {
+   /*public JLabel getStatusBar() {
        return statusbar;
-   }
+   }*/
 
     public static void main(String[] args) {
 
