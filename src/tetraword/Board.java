@@ -9,7 +9,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,6 +39,10 @@ public class Board extends JPanel implements ActionListener {
     int[] ids;
     
     int lastShapeId = -1;
+    String inputLetters = "";
+    int bestAnagram = 0;
+    double difficulty = 0.75;
+    int curLine;
     
 
     public Board(GameFrame parent) {
@@ -213,8 +216,13 @@ public class Board extends JPanel implements ActionListener {
             ids[(y * BoardWidth) + x] = curPiece.getId();
         }
         
-        // TODO 
-        removeFullLines();
+        /* TODO Verifier si des lignes sont pleines dans le jeu :
+		    for (int i = BoardHeight - 1; i >= 0; --i) {
+		    	if(isLineFull(i)) {
+		    		// Faire quelque chose
+		    	}
+		    }
+		*/
 
         if (!isFallingFinished)
             newPiece();
@@ -255,8 +263,70 @@ public class Board extends JPanel implements ActionListener {
         repaint();
         return true;
     }
+    
+    private boolean isWordCorrect() {
+    	boolean validWord = false;
+    	
+		// TODO On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
+		// bestAnagram =
+    	
+    	// Verifie si le mot n'est pas vide
+    	if(inputLetters != "" || inputLetters != null) {
+    		// Verifie si le mot respecte la difficulte
+    		if(inputLetters.length() >= (int)difficulty * bestAnagram) {
+    			// TODO Verifier si le mot est dans le dictionnaire
+    			validWord = true;
+    		}
+    	}
+    	return validWord;
+    }
+    
+    private boolean isLineFull(int y) {
+    	boolean lineIsFull = true;
+    	
+    	// On parcourt toutes les lignes du jeu
+    	//for (int i = BoardHeight - 1; i >= 0; --i) { 
+            // On parcourt toutes les colonnes du jeu
+            for (int j = 0; j < BoardWidth; ++j) {
+            	// Si on trouve des cases vides, la ligne n'est pas pleine
+                if (shapeAt(j, y) == Tetrominoes.NoShape) {
+                    lineIsFull = false;
+                    break;
+                }
+            }
+        //}
+    	return lineIsFull;
+    }
+    
+    private void removeLine(int y) {
+		int numFullLines = 0;
+		
+    	if(isWordCorrect() && isLineFull(y)) {
+            
+        	// Parcourir toutes les pieces
+            for (int k = y; k < BoardHeight - 1; ++k) {
+            	for (int j = 0; j < BoardWidth; ++j) {
+                    ++numFullLines;
+            		// Suppression de la ligne
+            		board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
+                	letters[(k * BoardWidth) + j] = letterAt(j, k + 1);
+                	ids[(k * BoardWidth) + j] = idAt(j, k + 1);
+                	
+                	// TODO Augmentation du score
+            	}
+            }
+    	}
 
-    private void removeFullLines()
+        if (numFullLines > 0) {
+            numLinesRemoved += numFullLines;
+            //statusbar.setText(String.valueOf(numLinesRemoved));
+            isFallingFinished = true;
+            curPiece.setShape(Tetrominoes.NoShape);
+            repaint();
+        }
+    }
+
+    /*private void removeFullLines()
     {
         int numFullLines = 0;
 
@@ -276,19 +346,19 @@ public class Board extends JPanel implements ActionListener {
 
             if (lineIsFull) {
                 ++numFullLines;
-            	lettersAt(0);
-            	lettersAt(1);
-            	lettersAt(2);
-            	lettersAt(3);
+            	//lettersAt(0);
+            	//lettersAt(1);
+            	//lettersAt(2);
+            	//lettersAt(3);
                 
                 // Suppression des lignes pleines
-                /*for (int k = i; k < BoardHeight - 1; ++k) {
+                for (int k = i; k < BoardHeight - 1; ++k) {
                     for (int j = 0; j < BoardWidth; ++j) {
                     	board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
                     	//letters[(k * BoardWidth) + j] = letterAt(j, k + 1);
                     	//ids[(k * BoardWidth) + j] = idAt(j, k + 1);
                     }
-                }*/
+                }
             }
         }
 
@@ -299,7 +369,7 @@ public class Board extends JPanel implements ActionListener {
             curPiece.setShape(Tetrominoes.NoShape);
             repaint();
         }
-     }
+	}*/
 
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, char letter)
     {
@@ -336,16 +406,26 @@ public class Board extends JPanel implements ActionListener {
         int boardTop = 58;
         int boardLeft = 120;
         
-    	int newX = -(boardLeft - x) / squareWidth();
-    	// TODO int newY = (boardTop - y) / squareHeight();
-    	// Quand newY devrait être = à 0, il vaut 19
+        // Conversion des pixels (recuperes au clic) en nombre de cases
+        // x appartient a [0,9]
+        // y appartient a [19,0]
+    	int newX = (x - boardLeft) / squareWidth();
+    	int newY = (BoardHeight - 1) - ((y - boardTop) / squareHeight());
     	
-    	//System.out.println("y = " + newY);
+    	// Verifie si la ligne est pleine
+    	if(isLineFull(newY)) {
+    		curLine = newY;
+    		lettersAt(newY);
+    		inputLetters += letterAt(newX,newY);
+    		System.out.println("La lettre a (" + newX + "," + newY + ") est " + letterAt(newX, newY));
+    		System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    	}
+    	else {
+    		// TODO Ecrire un message pour dire que la ligne n'est pas pleine
+    		bestAnagram = -1;
+    		System.err.println("La ligne n'est pas pleine");
+    	}
     }
-    
-    /*private String lettersClicked(int x, int y) {
-		return null;
-    }*/
     
     class MouseManager implements MouseListener
     {
@@ -366,71 +446,74 @@ public class Board extends JPanel implements ActionListener {
 
 		@Override
 		public void mouseEntered(MouseEvent arg0) {
-			// TODO Auto-generated method stub
+			// Auto-generated method stub
 			
 		}
 
 		@Override
 		public void mouseExited(MouseEvent arg0) {
-			// TODO Auto-generated method stub
+			// Auto-generated method stub
 			
 		}
 
 		@Override
 		public void mousePressed(MouseEvent arg0) {
-			// TODO Auto-generated method stub
+			// Auto-generated method stub
 			
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent arg0) {
-			// TODO Auto-generated method stub
+			// Auto-generated method stub
 			
 		}
     }
 
     class TAdapter extends KeyAdapter {
-         public void keyPressed(KeyEvent e) {
+    	public void keyPressed(KeyEvent e) {
 
-             if (!isStarted || curPiece.getShape() == Tetrominoes.NoShape) {  
-                 return;
-             }
+    		if (!isStarted || curPiece.getShape() == Tetrominoes.NoShape) {  
+    			return;
+    		}
 
-             int keycode = e.getKeyCode();
+    		int keycode = e.getKeyCode();
 
-             if (keycode == 'p' || keycode == 'P') {
-                 pause();
-                 return;
-             }
+    		if (keycode == 'p' || keycode == 'P') {
+    			pause();
+    			return;
+    		}
 
-             if (isPaused)
-                 return;
+    		if (isPaused)
+    			return;
 
-             switch (keycode) {
-             case KeyEvent.VK_LEFT:
-                 tryMove(curPiece, curX - 1, curY);
-                 break;
-             case KeyEvent.VK_RIGHT:
-                 tryMove(curPiece, curX + 1, curY);
-                 break;
-             case KeyEvent.VK_SPACE:
-                 tryMove(curPiece.rotateRight(), curX, curY);
-                 break;
-             /*case KeyEvent.VK_UP:
-                 tryMove(curPiece.rotateLeft(), curX, curY);
-                 break;*/
-             case KeyEvent.VK_UP:
-                 dropDown();
-                 break;
-             case KeyEvent.VK_DOWN:
-            	 oneLineDown();
-            	 break;
-             /*case 'd':
-                 oneLineDown();
-                 break;
-             case 'D':
-                 oneLineDown();
-                 break;*/
+    		switch (keycode) {
+    		case KeyEvent.VK_LEFT:
+    			tryMove(curPiece, curX - 1, curY);
+    			break;
+    		case KeyEvent.VK_RIGHT:
+    			tryMove(curPiece, curX + 1, curY);
+    			break;
+    		case KeyEvent.VK_SPACE:
+    			tryMove(curPiece.rotateRight(), curX, curY);
+    			break;
+    		/*case KeyEvent.VK_UP:
+				tryMove(curPiece.rotateLeft(), curX, curY);
+				break;*/
+    		case KeyEvent.VK_UP:
+    			dropDown();
+    			break;
+    		case KeyEvent.VK_DOWN:
+    			oneLineDown();
+    			break;
+    		case KeyEvent.VK_ENTER:
+    			removeLine(curLine);
+    			break;
+    		/*case 'd':
+				oneLineDown();
+				break;
+			case 'D':
+				oneLineDown();
+				break;*/
              }
 
          }
