@@ -532,6 +532,7 @@ public class Preference extends JFrame {
             	MainMenu menu = new MainMenu();
                 menu.setLocationRelativeTo(null);
                 menu.setVisible(true);
+                dispose();
         	}
         });
         
