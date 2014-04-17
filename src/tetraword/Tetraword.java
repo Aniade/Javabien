@@ -57,7 +57,7 @@ public class Tetraword extends JFrame implements ActionListener {
         panel.add(bt_exit);
         
      	// Ajout d'une image de fond
-        ii = new ImageIcon(this.getClass().getResource("pictures/bg_accueil.jpg"));
+        ii = new ImageIcon(this.getClass().getResource("pictures/bg_accueil_2.jpg"));
         picture = new JLabel(new ImageIcon(ii.getImage()));
         add(picture);   
 
@@ -89,8 +89,8 @@ public class Tetraword extends JFrame implements ActionListener {
        	System.out.println("Lancement d'une nouvelle partie");
        	GameFrame game = new GameFrame();
        	game.setLocationRelativeTo(null);
-           game.setVisible(true);
-           this.dispose();
+        game.setVisible(true);
+        this.dispose();
        }
        else if(e.getSource() == bt_exit)
        {

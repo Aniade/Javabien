@@ -73,40 +73,39 @@ public class Board extends JPanel implements ActionListener {
     int squareWidth() { return (int) 279 / BoardWidth; }
     int squareHeight() { return (int) 570 / BoardHeight; }
     Tetrominoes shapeAt(int x, int y) { return board[(y * BoardWidth) + x]; }
-    char letterAt(int x, int y){ return letters[(y * BoardWidth) + x]; }
-    int idAt(int x, int y) { return ids[(y * BoardWidth) + x]; }
+    
+    char letterAt(int x, int y){ 
+    	//System.out.println("Lettre à (" + x + ", " + y + ") = " + letters[(y * BoardWidth) + x]);
+    	return letters[(y * BoardWidth) + x];
+    }
+    int idAt(int x, int y) {
+    	//System.out.println("Id à (" + x + ", " + y + ") = " + ids[(y * BoardWidth) + x]);
+    	return ids[(y * BoardWidth) + x];
+    }
     
     String lettersAt(int y) {
     	StringBuilder sb = new StringBuilder();;
     	sb.append(letterAt(0, y));
 		int previousShapeId = idAt(0, y);
+		char previousShapeLetter = letterAt(0, y);
+		Tetrominoes previousShape = shapeAt(0, y);
     	for(int i=1; i<BoardWidth; i++) {
-    		/*System.out.println(letterAt(i, y));*/
-    		if(previousShapeId != idAt(i,y)) {
-    			if(letterAt(i, y) == '\0') {
+    		if(previousShapeId != idAt(i,y) ||
+    		   previousShapeLetter != letterAt(i,y) ||
+    		   previousShape != shapeAt(i,y))
+    		{
+    			if(letterAt(i,y) == '\0' || shapeAt(i,y) == Tetrominoes.NoShape) {
     				sb.append("-");
     			} else {
     				sb.append(letterAt(i, y));
     			}
     		}
     		previousShapeId = idAt(i, y);
+    		previousShapeLetter = letterAt(i, y);
+    		previousShape = shapeAt(i, y);
     	}
     	System.out.println("Les lettres à la ligne " + y + " sont " + sb);
 		return sb.toString();
-		
-		
-		/*StringBuilder sb = new StringBuilder();
-		sb.append(super.toString());
-		if(cartoonist != null) {
-			sb.append("Dessinateur : " + cartoonist + "\n");
-		}
-		
-		if(color) {
-			sb.append("Couleurs : Oui\n");
-		} else{
-			sb.append("Couleurs : Non\n");
-		}
-		return sb.toString();*/
     }
 
     public void start()
@@ -276,8 +275,13 @@ public class Board extends JPanel implements ActionListener {
             }
 
             if (lineIsFull) {
-                lettersAt(0);
                 ++numFullLines;
+            	lettersAt(0);
+            	lettersAt(1);
+            	lettersAt(2);
+            	lettersAt(3);
+                
+                // Suppression des lignes pleines
                 /*for (int k = i; k < BoardHeight - 1; ++k) {
                     for (int j = 0; j < BoardWidth; ++j) {
                     	board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
@@ -333,7 +337,10 @@ public class Board extends JPanel implements ActionListener {
         int boardLeft = 120;
         
     	int newX = -(boardLeft - x) / squareWidth();
-    	int newY = -(boardTop - y) / squareHeight();
+    	// TODO int newY = (boardTop - y) / squareHeight();
+    	// Quand newY devrait être = à 0, il vaut 19
+    	
+    	//System.out.println("y = " + newY);
     }
     
     /*private String lettersClicked(int x, int y) {
