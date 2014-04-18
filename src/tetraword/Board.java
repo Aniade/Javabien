@@ -9,7 +9,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -139,13 +143,56 @@ public class Board extends JPanel implements ActionListener {
     
     // Dessine tous les objets
     public void paint(Graphics g)
-    { 
-        
-        // Ajout d'une image de fond
-        ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
+    {
+    	Properties options = new Properties(); 
+    	
+    	// Création d'une instance de File pour le fichier de config
+    	File fichierConfig = new File("conf/conf.properties"); 
+
+    	//Chargement du fichier de configuration
+    	try {
+    	options.load(new FileInputStream(fichierConfig));
+    	} 
+    	catch(IOException e) {
+    		System.out.println("Echec chargement");
+    	}
+    	
+    	/* Récupérer une propriété d'un fichier de configurations           */
+   	 	String configUniv = options.getProperty("Univers"); 
+   	 	
+    	switch (configUniv)
+ 	   	{
+ 	   	  case "western":
+ 	        // Ajout d'une image de fond
+ 	        ii = new ImageIcon(this.getClass().getResource("pictures/cowboys.jpg"));
+ 	   	    break;
+ 	   	  case "kungfu":
+ 	        // Ajout d'une image de fond
+ 	        ii = new ImageIcon(this.getClass().getResource("pictures/ninjas.jpg"));
+ 	   	    break; 
+ 	   	  case "pirate":
+ 	         // Ajout d'une image de fond
+ 	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
+ 	   	    break; 
+ 	   	  case "batman":
+ 	         // Ajout d'une image de fond
+ 	         ii = new ImageIcon(this.getClass().getResource("pictures/batman.jpg"));
+ 	   	    break; 
+ 	   	  default:
+ 	         // Ajout d'une image de fond
+ 	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));         
+ 	   	}
+   	 	
+
         picture = new JLabel(new ImageIcon(ii.getImage()));
         picture.setSize(525, 700);
         add(picture);
+        
+        // Ajout d'une image de fond
+        /*ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
+        picture = new JLabel(new ImageIcon(ii.getImage()));
+        picture.setSize(525, 700);
+        add(picture);*/
         
     	super.paint(g);
 
@@ -438,9 +485,9 @@ public class Board extends JPanel implements ActionListener {
     	}
     }
     
-    private void worddle(int x, int y) {
+    /*private void worddle(int x, int y) {
     	
-    }
+    }*/
     
     class MouseManager implements MouseListener
     {
@@ -484,13 +531,13 @@ public class Board extends JPanel implements ActionListener {
 	    			tryMove(curPiece, curX + 1, curY);
 	    			break;
 	    		case KeyEvent.VK_SPACE:
-	    			tryMove(curPiece.rotateRight(), curX, curY);
+	    			dropDown();
 	    			break;
 	    		/*case KeyEvent.VK_UP:
 					tryMove(curPiece.rotateLeft(), curX, curY);
 					break;*/
 	    		case KeyEvent.VK_UP:
-	    			dropDown();
+	    			tryMove(curPiece.rotateRight(), curX, curY);
 	    			break;
 	    		case KeyEvent.VK_DOWN:
 	    			oneLineDown();
