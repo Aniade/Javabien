@@ -107,7 +107,7 @@ public class Board extends JPanel implements ActionListener {
     		previousShapeLetter = letterAt(i, y);
     		previousShape = shapeAt(i, y);
     	}
-    	//System.out.println("Les lettres à la ligne " + y + " sont " + sb);
+    	//System.out.println("Les lettres ï¿½ la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
 
@@ -146,7 +146,7 @@ public class Board extends JPanel implements ActionListener {
     {
     	Properties options = new Properties(); 
     	
-    	// Création d'une instance de File pour le fichier de config
+    	// Crï¿½ation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
@@ -157,7 +157,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Echec chargement");
     	}
     	
-    	/* Récupérer une propriété d'un fichier de configurations           */
+    	/* Rï¿½cupï¿½rer une propriï¿½tï¿½ d'un fichier de configurations           */
    	 	String configUniv = options.getProperty("Univers"); 
    	 	
     	switch (configUniv)
@@ -309,20 +309,30 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private boolean isWordCorrect() {
-    	boolean validWord = false;
-    	
-		// TODO On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
-		// bestAnagram =
-    	
-    	// Verifie si le mot n'est pas vide
-    	if(inputLetters != "" || inputLetters != null) {
-    		// Verifie si le mot respecte la difficulte
-    		if(inputLetters.length() >= (int)difficulty * bestAnagram) {
-    			// TODO Verifier si le mot est dans le dictionnaire
-    			validWord = true;
-    		}
-    	}
-    	return validWord;
+	    Dictionary dictionary = new Dictionary();
+	    boolean validWord = false;  
+		
+	    //On adapte inputLetters aux methodes de dictionary
+	    inputLetters = inputLetters.toLowerCase();
+		 	 
+		//On recupere les lettres de la ligne
+		String inlineLetters = (lettersAt(curLine)).toLowerCase();
+		char tabInlineLetters[] = inlineLetters.toCharArray();
+	 	 	
+		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
+		 String bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
+		 System.out.println(bestAnagram.length()+" "+ bestAnagram);    
+    
+		 // Verifie si le mot n'est pas vide
+		 if(inputLetters != "" || inputLetters != null) {
+			 // Verifie si le mot respecte la difficulte
+			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
+				 //Verifier si le mot est dans le dictionnaire
+				 validWord = dictionary.validateWord(inputLetters);
+				 System.out.println(validWord);     
+			 }
+		 }
+    return validWord;
     }
     
     private boolean isLineFull(int y) {
@@ -461,7 +471,7 @@ public class Board extends JPanel implements ActionListener {
     			inputIds.clear();
     		}
     		curLine = newY;
-    		// On vérifie que l'utilisateur clique sur la piece pour la premiere fois
+    		// On vï¿½rifie que l'utilisateur clique sur la piece pour la premiere fois
     		int curId = idAt(newX,newY);
     		boolean firstTime = true;
     		for(int i = 0; i < inputIds.size(); i++) {
