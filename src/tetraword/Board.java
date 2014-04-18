@@ -9,6 +9,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,6 +45,7 @@ public class Board extends JPanel implements ActionListener {
     int bestAnagram = 0;
     double difficulty = 0.75;
     int curLine;
+    ArrayList<Integer> inputIds = new ArrayList<Integer>();
     
 
     public Board(GameFrame parent) {
@@ -76,15 +79,8 @@ public class Board extends JPanel implements ActionListener {
     int squareWidth() { return (int) 279 / BoardWidth; }
     int squareHeight() { return (int) 570 / BoardHeight; }
     Tetrominoes shapeAt(int x, int y) { return board[(y * BoardWidth) + x]; }
-    
-    char letterAt(int x, int y){ 
-    	//System.out.println("Lettre à (" + x + ", " + y + ") = " + letters[(y * BoardWidth) + x]);
-    	return letters[(y * BoardWidth) + x];
-    }
-    int idAt(int x, int y) {
-    	//System.out.println("Id à (" + x + ", " + y + ") = " + ids[(y * BoardWidth) + x]);
-    	return ids[(y * BoardWidth) + x];
-    }
+    char letterAt(int x, int y){ return letters[(y * BoardWidth) + x]; }
+    int idAt(int x, int y) { return ids[(y * BoardWidth) + x]; }
     
     String lettersAt(int y) {
     	StringBuilder sb = new StringBuilder();;
@@ -107,7 +103,7 @@ public class Board extends JPanel implements ActionListener {
     		previousShapeLetter = letterAt(i, y);
     		previousShape = shapeAt(i, y);
     	}
-    	System.out.println("Les lettres à la ligne " + y + " sont " + sb);
+    	//System.out.println("Les lettres à la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
 
@@ -164,7 +160,8 @@ public class Board extends JPanel implements ActionListener {
                 char letter = letterAt(j, BoardHeight - i - 1);
                 if (shape != Tetrominoes.NoShape)
                     drawSquare(g, boardLeft + j * squareWidth(),
-                               boardTop + i * squareHeight(), shape, letter);
+                               boardTop + i * squareHeight(),
+                               shape, letter);
             }
         }
 
@@ -346,10 +343,6 @@ public class Board extends JPanel implements ActionListener {
 
             if (lineIsFull) {
                 ++numFullLines;
-            	//lettersAt(0);
-            	//lettersAt(1);
-            	//lettersAt(2);
-            	//lettersAt(3);
                 
                 // Suppression des lignes pleines
                 for (int k = i; k < BoardHeight - 1; ++k) {
@@ -402,7 +395,7 @@ public class Board extends JPanel implements ActionListener {
 
     }
     
-    private void clickManager (int x, int y) {
+    private void anagram (int x, int y) {
         int boardTop = 58;
         int boardLeft = 120;
         
@@ -414,11 +407,29 @@ public class Board extends JPanel implements ActionListener {
     	
     	// Verifie si la ligne est pleine
     	if(isLineFull(newY)) {
+    		// Verifie si l'utilisateur fait un anagramme sur une nouvelle ligne
+    		if(curLine != newY) {
+    			System.out.println("Saisie sur une nouvelle ligne");
+    			inputLetters = "";
+    			inputIds.clear();
+    		}
     		curLine = newY;
-    		lettersAt(newY);
-    		inputLetters += letterAt(newX,newY);
-    		System.out.println("La lettre a (" + newX + "," + newY + ") est " + letterAt(newX, newY));
-    		System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    		// On vérifie que l'utilisateur clique sur la piece pour la premiere fois
+    		int curId = idAt(newX,newY);
+    		boolean firstTime = true;
+    		for(int i = 0; i < inputIds.size(); i++) {
+    			if(inputIds.get(i) == curId) {
+    				firstTime = false;
+    				System.err.println("La lettre a deja ete utilisee");
+    				break;
+    			}
+    	    }
+    		if(firstTime) {
+        		inputLetters += letterAt(newX,newY);
+        		inputIds.add(idAt(newX,newY));
+        		//System.out.println("La lettre a (" + newX + "," + newY + ") est " + letterAt(newX, newY));
+        		System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    		}
     	}
     	else {
     		// TODO Ecrire un message pour dire que la ligne n'est pas pleine
@@ -427,46 +438,25 @@ public class Board extends JPanel implements ActionListener {
     	}
     }
     
+    private void worddle(int x, int y) {
+    	
+    }
+    
     class MouseManager implements MouseListener
     {
 		@Override
     	public void mouseClicked(MouseEvent e)
         {
-			clickManager(e.getX(), e.getY());
-			/*int xPx = e.getX();
-			int yPx = e.getY();
-			
-			int x = (boardLeft-xPx) / squareWidth();
-			System.out.println(y);*/
-			
-			/*if (shapeAt(x, y) != Tetrominoes.NoShape) {
-				System.out.println("Clic sur une piece");
-			}*/
+			anagram(e.getX(), e.getY());
         } 
-
 		@Override
-		public void mouseEntered(MouseEvent arg0) {
-			// Auto-generated method stub
-			
-		}
-
+		public void mouseEntered(MouseEvent arg0) { /* Auto-generated method stub */ }
 		@Override
-		public void mouseExited(MouseEvent arg0) {
-			// Auto-generated method stub
-			
-		}
-
+		public void mouseExited(MouseEvent arg0) { /* Auto-generated method stub */ }
 		@Override
-		public void mousePressed(MouseEvent arg0) {
-			// Auto-generated method stub
-			
-		}
-
+		public void mousePressed(MouseEvent arg0) { /* Auto-generated method stub */ }
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
-			// Auto-generated method stub
-			
-		}
+		public void mouseReleased(MouseEvent arg0) { /* Auto-generated method stub */ }
     }
 
     class TAdapter extends KeyAdapter {
@@ -487,33 +477,33 @@ public class Board extends JPanel implements ActionListener {
     			return;
 
     		switch (keycode) {
-    		case KeyEvent.VK_LEFT:
-    			tryMove(curPiece, curX - 1, curY);
-    			break;
-    		case KeyEvent.VK_RIGHT:
-    			tryMove(curPiece, curX + 1, curY);
-    			break;
-    		case KeyEvent.VK_SPACE:
-    			tryMove(curPiece.rotateRight(), curX, curY);
-    			break;
-    		/*case KeyEvent.VK_UP:
-				tryMove(curPiece.rotateLeft(), curX, curY);
-				break;*/
-    		case KeyEvent.VK_UP:
-    			dropDown();
-    			break;
-    		case KeyEvent.VK_DOWN:
-    			oneLineDown();
-    			break;
-    		case KeyEvent.VK_ENTER:
-    			removeLine(curLine);
-    			break;
-    		/*case 'd':
-				oneLineDown();
-				break;
-			case 'D':
-				oneLineDown();
-				break;*/
+	    		case KeyEvent.VK_LEFT:
+	    			tryMove(curPiece, curX - 1, curY);
+	    			break;
+	    		case KeyEvent.VK_RIGHT:
+	    			tryMove(curPiece, curX + 1, curY);
+	    			break;
+	    		case KeyEvent.VK_SPACE:
+	    			tryMove(curPiece.rotateRight(), curX, curY);
+	    			break;
+	    		/*case KeyEvent.VK_UP:
+					tryMove(curPiece.rotateLeft(), curX, curY);
+					break;*/
+	    		case KeyEvent.VK_UP:
+	    			dropDown();
+	    			break;
+	    		case KeyEvent.VK_DOWN:
+	    			oneLineDown();
+	    			break;
+	    		case KeyEvent.VK_ENTER:
+	    			removeLine(curLine);
+	    			break;
+	    		/*case 'd':
+					oneLineDown();
+					break;
+				case 'D':
+					oneLineDown();
+					break;*/
              }
 
          }

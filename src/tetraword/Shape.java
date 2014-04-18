@@ -11,10 +11,9 @@ public class Shape {
 
     private Tetrominoes pieceShape;
     private char pieceLetter;
+    private int pieceId;
     private int coords[][];
     private int[][][] coordsTable;
-    
-    private int id;
     
     
     // Constructeur
@@ -46,14 +45,14 @@ public class Shape {
     }
     
     public void setLetter(char letter) { pieceLetter = letter; }
-    public void setId(int id) { this.id = id; }
+    public void setId(int id) { pieceId = id; }
     private void setX(int index, int x) { coords[index][0] = x; }
     private void setY(int index, int y) { coords[index][1] = y; }
     public int x(int index) { return coords[index][0]; }
     public int y(int index) { return coords[index][1]; }
     public Tetrominoes getShape()  { return pieceShape; }
     public char getLetter() { return pieceLetter; }
-    public int getId() { return id; }
+    public int getId() { return pieceId; }
 
     public void setRandomShape()
     {
@@ -121,6 +120,7 @@ public class Shape {
         Shape result = new Shape();
         result.pieceShape = pieceShape;
         result.pieceLetter = pieceLetter;
+        result.pieceId = pieceId;
 
         for (int i = 0; i < 4; ++i) {
             result.setX(i, y(i));
@@ -137,6 +137,7 @@ public class Shape {
         Shape result = new Shape();
         result.pieceShape = pieceShape;
         result.pieceLetter = pieceLetter;
+        result.pieceId = pieceId;
 
         for (int i = 0; i < 4; ++i) {
             result.setX(i, -y(i));
