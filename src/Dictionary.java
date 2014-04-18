@@ -1,27 +1,59 @@
+package tetraword;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Properties;
 import java.util.TreeSet;
+
 
 
 public class Dictionary {
 	private String[] wordList;
-	//Tableau d'entier qui stocke la position à laquelle la première lettre du word change
+	//Tableau d'entier qui stocke la position Ã  laquelle la premiÃ¨re lettre du word change
 	private int[] position = new int[27];
 	/*Collection pour pouvoir trier les words*/
 	private TreeSet<String> tmpList = new TreeSet<String>();
 	/*Chemin du fichier dictionnaire.txt*/
-	private String file = "dictionnaire/dictionnaire.txt";
+	private String file;
 	
 	
 	/* Constructeur de la class qui ajoute le fichier texte dictionnaire dans un TreeSet
 	 *  et dans un tableau 1D*/
 	
 	public Dictionary() {
+    	Properties options = new Properties(); 
+    	
+    	// CrÃ©ation d'une instance de File pour le fichier de config
+    	File fichierConfig = new File("conf/conf.properties"); 
+
+    	//Chargement du fichier de configuration
+    	try {
+    	options.load(new FileInputStream(fichierConfig));
+    	} 
+    	catch(IOException e) {
+    		System.out.println("Echec chargement");
+    	}
+    	
+    	/* RÃ©cupÃ©rer une propriÃ©tÃ© d'un fichier de configurations */
+   	 	String configDico = options.getProperty("Dictionary");
+   	 	
+    	switch (configDico)
+ 	   	{
+ 	   	  case "francais":
+ 	   		file = "dictionnaire/dictionnaire.txt";
+ 	   	    break;
+ 	   	  case "anglais":
+ 	   		file = "dictionnaire/dictionary.txt";
+ 	   	    break; 
+ 	   	  default:
+ 	   		file = "dictionnaire/dictionnaire.txt";
+ 	   			
+ 	   	}
+    	
+    	
 		//Lecture du fichier
 		try {
         BufferedReader in = new BufferedReader(new FileReader(file));
@@ -52,36 +84,36 @@ public class Dictionary {
         findPosition();
         
 		} 
-	//Si le fichier texte n'est pas trouvé
+	//Si le fichier texte n'est pas trouvÃ©
     catch (IOException e) {
     	System.out.println("le fichier : "+ file +" n'a pas ete trouve");
     }
 
 }
 
-//Méthode qui enlève les accents
+//MÃ©thode qui enlÃ¨ve les accents
 public String replaceString(String word){
-		word=word.replace('à','a');
-		word=word.replace('â','a');
-		word=word.replace('ä','a');
-		word=word.replace('é','e');
-		word=word.replace('è','e');
-		word=word.replace('ê','e');
-		word=word.replace('ë','e');
-		word=word.replace('î','i');
-		word=word.replace('ï','i');
-		word=word.replace('ò','o');
-		word=word.replace('ô','o');
-		word=word.replace('ö','o');
-		word=word.replace('ù','u');
-		word=word.replace('û','u');
-		word=word.replace('ü','u');
-		word=word.replace('ç','c');
+		word=word.replace('Ã ','a');
+		word=word.replace('Ã¢','a');
+		word=word.replace('Ã¤','a');
+		word=word.replace('Ã©','e');
+		word=word.replace('Ã¨','e');
+		word=word.replace('Ãª','e');
+		word=word.replace('Ã«','e');
+		word=word.replace('Ã®','i');
+		word=word.replace('Ã¯','i');
+		word=word.replace('Ã²','o');
+		word=word.replace('Ã´','o');
+		word=word.replace('Ã¶','o');
+		word=word.replace('Ã¹','u');
+		word=word.replace('Ã»','u');
+		word=word.replace('Ã¼','u');
+		word=word.replace('Ã§','c');
 		return(word);	
 	
 	}
 
-/* Accelere la recherche de mot dans le tableau en trouvant la position de début de chaque lettre 
+/* Accelere la recherche de mot dans le tableau en trouvant la position de dÃ©but de chaque lettre 
 */
 public void findPosition(){
 	char temp='a';
@@ -93,7 +125,7 @@ public void findPosition(){
 		 	if(wordList[i].charAt(0)==temp)
 		 		{
 		 		position[temp2]=i;
-		 		//On incrémente pour passer a la lettre suivante
+		 		//On incrÃ©mente pour passer a la lettre suivante
 		 		temp++;
 	 			temp2++; 	 			
 			 	}
@@ -127,7 +159,7 @@ public boolean validateWord(String word){
 	/*On parcourt tout les mots commencant par la lettre du mot saisie*/
 	while(find==false && first<end)
 		{	System.out.println(wordList[first]);
-			//Si le mot correspond à un mot du dictionnaire on retourne true.
+			//Si le mot correspond Ã  un mot du dictionnaire on retourne true.
 		  	if(wordList[first].equals(word)==true)
 		 	{
 		 		find=true;
@@ -140,7 +172,7 @@ public boolean validateWord(String word){
 
 
 
-/*Tri par ordre alphabétique*/
+/*Tri par ordre alphabÃ©tique*/
 public static char[] alphaTri(char tab[], int size){
 	boolean permut;
 	char tmp;
@@ -160,9 +192,9 @@ public static char[] alphaTri(char tab[], int size){
 
 /*Methode pour trouver le meilleur anagramme*/
 public String bestAnagram(char tab[], int size){
-	//Liste avec les mots triés par ordre alphabétique
-	String[] triList = wordList;
-	//On trie le tableau de caractère par ordre alphabétique
+	//Liste avec les mots triÃ©s par ordre alphabÃ©tique
+	//String[] triList = wordList;
+	//On trie le tableau de caractÃ¨re par ordre alphabÃ©tique
 	tab = alphaTri(tab, size);
 	//On le convertit en string
 	String saisie = new String(tab);
@@ -171,14 +203,14 @@ public String bestAnagram(char tab[], int size){
 	boolean find = false;
 	int cpt=0;
 		while( cpt != position[26]){
-			/*Si le mot du dico fait la même taille que la saisie*/
+			/*Si le mot du dico fait la mÃªme taille que la saisie*/
 			if(wordList[cpt].length() == size){
-				//On convertir les string en tableau de caractère
+				//On convertir les string en tableau de caractÃ¨re
 				char tableau[] = wordList[cpt].toCharArray();
-				//On trie les mots du dico par ordre alphabétique
+				//On trie les mots du dico par ordre alphabÃ©tique
 				tableau = alphaTri(tableau, wordList[cpt].length());
 				String word = new String(tableau);
-					/*Si le mot du dico contient exacetement les mêmes lettres alors on a un anagramme \o/*/
+					/*Si le mot du dico contient exacetement les mÃªmes lettres alors on a un anagramme \o/*/
 					if(saisie.compareTo(word) == 0){
 						System.out.println("YOUHOUUUUUUUUU"); 
 						System.out.println(wordList[cpt]); 
@@ -190,7 +222,7 @@ public String bestAnagram(char tab[], int size){
 			}
 			cpt++;
 		}
-		/*Si on a pas trouvé d'anagramme*/
+		/*Si on a pas trouvÃ© d'anagramme*/
 		if(find == false){		
 			int n = 1;
 			while(find != true){
@@ -202,9 +234,9 @@ public String bestAnagram(char tab[], int size){
 					/*Si on peut faire un mot avec n lettre en moin de la saisie*/
 					if(wordList[cpt].length() == size - n){
 						//System.out.println(wordList[cpt]);
-						//On convertir les string en tableau de caractère
+						//On convertir les string en tableau de caractÃ¨re
 						char tableau[] = wordList[cpt].toCharArray();
-						//On trie les mots du dico par ordre alphabétique
+						//On trie les mots du dico par ordre alphabÃ©tique
 						tableau = alphaTri(tableau, wordList[cpt].length());
 						String word = new String(tableau);
 						while(i<word.length()+n){
@@ -212,7 +244,7 @@ public String bestAnagram(char tab[], int size){
 								j++;
 								i++;
 								valid++; 
-								/*Si valide est égale au bon nombre de lettre alors on a trouvé un des mots le plus long à partir de la saisie*/
+								/*Si valide est Ã©gale au bon nombre de lettre alors on a trouvÃ© un des mots le plus long Ã  partir de la saisie*/
 								if(valid == size-n){
 									System.out.println("The word is :"+wordList[cpt]); 	
 									find = true; 
@@ -230,13 +262,13 @@ public String bestAnagram(char tab[], int size){
 					}
 					cpt++;
 				}
-				//Si on a toujours pas fait de mot on incrémente n, pour voir si on peut faire un mot en enlevant n lettre de la saisie 
+				//Si on a toujours pas fait de mot on incrÃ©mente n, pour voir si on peut faire un mot en enlevant n lettre de la saisie 
 				n++;
 				System.out.println(n); 
 			}
 		}
 		
-	/*Décider pour la valeur de retour*/	
+	/*DÃ©cider pour la valeur de retour*/	
 	String s = new String(tab);
 	return s;
 }
@@ -245,12 +277,12 @@ public String bestAnagram(char tab[], int size){
 
 public static void main(String[] args){	
 	Dictionary dictionary = new Dictionary();
-	boolean valide;
-	String wordValide = "petasse";
+	//boolean valide;
+	//String wordValide = "petasse";
 	//dictionary.allAnagrams(wordValide);
 	//valide = dictionary.validateWord(wordValide);
 	//System.out.println(wordValide + " et le resultat est : "+valide); 
-	String s="connasse";
+	String s="ahead";
 	char tab[] = s.toCharArray(); 
 	dictionary.bestAnagram(tab,s.length());
 	
