@@ -85,11 +85,7 @@ public class Board extends JPanel implements ActionListener {
     	for(int i = 0; i < BoardWidth; i++) {
     		sb.append(letterAt(i,y));
     	}
-<<<<<<< HEAD
     	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
-=======
-    	//System.out.println("Les lettres � la ligne " + y + " sont " + sb);
->>>>>>> c95e490f27102060b872937e186e678fbd2a543d
 		return sb.toString();
     }
 
@@ -128,11 +124,7 @@ public class Board extends JPanel implements ActionListener {
     {
     	Properties options = new Properties(); 
     	
-<<<<<<< HEAD
     	// Creation d'une instance de File pour le fichier de config
-=======
-    	// Cr�ation d'une instance de File pour le fichier de config
->>>>>>> c95e490f27102060b872937e186e678fbd2a543d
     	File fichierConfig = new File("conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
@@ -143,11 +135,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Echec chargement");
     	}
     	
-<<<<<<< HEAD
     	// Recuperer une propriete d'un fichier de configurations
-=======
-    	/* R�cup�rer une propri�t� d'un fichier de configurations           */
->>>>>>> c95e490f27102060b872937e186e678fbd2a543d
    	 	String configUniv = options.getProperty("Univers"); 
    	 	
     	switch (configUniv)
@@ -291,7 +279,6 @@ public class Board extends JPanel implements ActionListener {
     private boolean isWordCorrect() {
 	    Dictionary dictionary = new Dictionary();
 	    boolean validWord = false;  
-<<<<<<< HEAD
 
 	    //On adapte inputLetters aux methodes de dictionary
 	    inputLetters = inputLetters.toLowerCase();
@@ -300,16 +287,6 @@ public class Board extends JPanel implements ActionListener {
 		String inlineLetters = (lettersAt(curLine)).toLowerCase();
 		char tabInlineLetters[] = inlineLetters.toCharArray();
 
-=======
-		
-	    //On adapte inputLetters aux methodes de dictionary
-	    inputLetters = inputLetters.toLowerCase();
-		 	 
-		//On recupere les lettres de la ligne
-		String inlineLetters = (lettersAt(curLine)).toLowerCase();
-		char tabInlineLetters[] = inlineLetters.toCharArray();
-	 	 	
->>>>>>> c95e490f27102060b872937e186e678fbd2a543d
 		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
 		 String bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
 		 System.out.println(bestAnagram.length()+" "+ bestAnagram);    
@@ -467,7 +444,6 @@ public class Board extends JPanel implements ActionListener {
     			inputLetters = "";
     		}
     		curLine = newY;
-<<<<<<< HEAD
 
     		// On verifie que l'utilisateur clique sur la piece pour la premiere fois
     		if(bricks[newX][newY][2] == 0) {
@@ -476,23 +452,6 @@ public class Board extends JPanel implements ActionListener {
     			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
     		} else {
     			System.err.println("La lettre a deja ete utilisee");
-=======
-    		// On v�rifie que l'utilisateur clique sur la piece pour la premiere fois
-    		int curId = idAt(newX,newY);
-    		boolean firstTime = true;
-    		for(int i = 0; i < inputIds.size(); i++) {
-    			if(inputIds.get(i) == curId) {
-    				firstTime = false;
-    				System.err.println("La lettre a deja ete utilisee");
-    				break;
-    			}
-    	    }
-    		if(firstTime) {
-        		inputLetters += letterAt(newX,newY);
-        		inputIds.add(idAt(newX,newY));
-        		//System.out.println("La lettre a (" + newX + "," + newY + ") est " + letterAt(newX, newY));
-        		System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
->>>>>>> c95e490f27102060b872937e186e678fbd2a543d
     		}
     	}
     	else {
