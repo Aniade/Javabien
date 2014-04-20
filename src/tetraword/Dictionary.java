@@ -83,26 +83,26 @@ public class Dictionary {
 	    }
 	}
 
-	//MÃ©thode qui enlÃ¨ve les accents
+	//Méthode qui enlève les accents
 	public String replaceString(String word){
-		word=word.replace('Ã ','a');
-		word=word.replace('Ã¢','a');
-		word=word.replace('Ã¤','a');
-		word=word.replace('Ã©','e');
-		word=word.replace('Ã¨','e');
-		word=word.replace('Ãª','e');
-		word=word.replace('Ã«','e');
-		word=word.replace('Ã®','i');
-		word=word.replace('Ã¯','i');
-		word=word.replace('Ã²','o');
-		word=word.replace('Ã´','o');
-		word=word.replace('Ã¶','o');
-		word=word.replace('Ã¹','u');
-		word=word.replace('Ã»','u');
-		word=word.replace('Ã¼','u');
-		word=word.replace('Ã§','c');
+		word=word.replace('à','a');
+		word=word.replace('â','a');
+		word=word.replace('ä','a');
+		word=word.replace('é','e');
+		word=word.replace('è','e');
+		word=word.replace('ê','e');
+		word=word.replace('ë','e');
+		word=word.replace('î','i');
+		word=word.replace('ï','i');
+		word=word.replace('ò','o');
+		word=word.replace('ô','o');
+		word=word.replace('ö','o');
+		word=word.replace('ù','u');
+		word=word.replace('û','u');
+		word=word.replace('ü','u');
+		word=word.replace('ç','c');
 		
-		return(word);	
+		return(word);
 	}
 
 	// Accelere la recherche de mot dans le tableau en trouvant la position de dÃ©but de chaque lettre 
@@ -144,7 +144,7 @@ public class Dictionary {
 		
 		// On parcourt tous les mots commencant par la lettre du mot saisi
 		while(find==false && first<end) {
-			System.out.println(wordList[first]);
+			//System.out.println(wordList[first]);
 			
 			//Si le mot correspond Ã  un mot du dictionnaire on retourne true.
 		  	if(wordList[first].equals(word)==true) {
@@ -202,8 +202,8 @@ public class Dictionary {
 				
 				// Si le mot du dico contient exacetement les mÃªmes lettres alors on a un anagramme \o/
 				if(saisie.compareTo(word) == 0){
-					System.out.println("YOUHOUUUUUUUUU"); 
-					System.out.println(wordList[cpt]); 
+					//System.out.println("YOUHOUUUUUUUUU"); 
+					//System.out.println(wordList[cpt]); 
 					find = true;
 				}
 				/*
@@ -237,7 +237,7 @@ public class Dictionary {
 								valid++; 
 								/*Si valide est Ã©gale au bon nombre de lettre alors on a trouvÃ© un des mots le plus long Ã  partir de la saisie*/
 								if(valid == size-n) {
-									System.out.println("The word is :"+wordList[cpt]); 	
+									//System.out.println("The word is :"+wordList[cpt]); 	
 									find = true; 
 									break;
 								}
@@ -253,7 +253,7 @@ public class Dictionary {
 				}
 				//Si on a toujours pas fait de mot on incrÃ©mente n, pour voir si on peut faire un mot en enlevant n lettre de la saisie 
 				n++;
-				System.out.println(n); 
+				//System.out.println(n); 
 			}
 		}
 

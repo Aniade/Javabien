@@ -4,25 +4,27 @@ import java.util.Random;
 import java.lang.Math;
 
 public class Shape {
-	
+
 	// Tetrominoes liste les 7 formes possibles des tetrominos + une forme vide appelee NoShape
     enum Tetrominoes { NoShape, ZShape, SShape, LineShape, 
                		   TShape, SquareShape, LShape, MirroredLShape };
 
     private Tetrominoes pieceShape;
-    private char pieceLetter;
-    private int pieceId;
-    private int coords[][];
+    private Brick[] bricks;
     private int[][][] coordsTable;
     
     
     // Constructeur
     public Shape() {
-        coords = new int[4][2];
+        //coords = new int[4][2];
+        bricks = new Brick[4];
+        bricks[0] = new Brick();
+        bricks[1] = new Brick();
+        bricks[2] = new Brick();
+        bricks[3] = new Brick();
         setShape(Tetrominoes.NoShape);
-        setLetter('\0');
     }
-
+    
     public void setShape(Tetrominoes shape) {
     	// Le tableau de coordonnées contient les coordonnées possibles des tetrominos
     	coordsTable = new int[][][] {
@@ -38,22 +40,48 @@ public class Shape {
 
         for (int i = 0; i < 4 ; i++) {
             for (int j = 0; j < 2; ++j) {
-                coords[i][j] = coordsTable[shape.ordinal()][i][j];
+                //coords[i][j] = coordsTable[shape.ordinal()][i][j];
+                bricks[i].brickCoords[j] = coordsTable[shape.ordinal()][i][j];
             }
         }
         pieceShape = shape;
     }
     
-    public void setLetter(char letter) { pieceLetter = letter; }
-    public void setId(int id) { pieceId = id; }
-    private void setX(int index, int x) { coords[index][0] = x; }
-    private void setY(int index, int y) { coords[index][1] = y; }
-    public int x(int index) { return coords[index][0]; }
-    public int y(int index) { return coords[index][1]; }
+    public void setIds(int id) {
+    	for(int i = 0; i < 4; i++) {
+    		bricks[i].setId(id + i);
+    	}
+    }
+    private void setX(int index, int x) { bricks[index].brickCoords[0] = x; }
+    private void setY(int index, int y) { bricks[index].brickCoords[1] = y; }
+    public int x(int index) { return bricks[index].brickCoords[0]; }
+    public int y(int index) { return bricks[index].brickCoords[1]; }
     public Tetrominoes getShape()  { return pieceShape; }
-    public char getLetter() { return pieceLetter; }
-    public int getId() { return pieceId; }
-
+    public int getId(int index) { return bricks[index].getId(); }
+    public int[] getIds() {
+    	int[] ids = new int[4];
+    	for(int i = 0; i < 4; i++) {
+    		ids[i] = bricks[i].getId();
+    	}
+    	return ids;
+    }
+    public char getLetter(int index) { return bricks[index].getLetter(); }
+    public char[] getLetters() {
+    	char[] letters = new char[4];
+    	for(int i = 0; i < 4; i++) {
+    		letters[i] = bricks[i].getLetter();
+    	}
+		return letters;
+    }
+    public int getClick(int index) { return bricks[index].getClick(); }
+    public int[] getClicks() {
+    	int[] clicks = new int[4];
+    	for(int i = 0; i < 4; i++) {
+    		clicks[i] = bricks[i].getClick();
+    	}
+		return clicks;
+    }
+    
     public void setRandomShape()
     {
         Random r = new Random();
@@ -61,43 +89,18 @@ public class Shape {
         Tetrominoes[] values = Tetrominoes.values(); 
         setShape(values[x]);
     }
-	
-	public void setRandomLetter() {
-		Random rnd = new Random();
-		
-		char[] chars = {'E', 'A', 'I', 'N', 'O', 'R', 'S', 'T', 'U', 'L',
-						'D', 'M', 'G',
-						'B', 'C', 'P',
-						'F', 'H', 'V',
-						'J', 'Q',
-						'K', 'W', 'X', 'Y', 'Z'};
-		double[] probabilities = {15, 9, 8, 6, 6, 6, 6, 6, 6, 5,
-								  3, 3, 2,
-								  2, 2, 2,
-								  2, 2, 2,
-								  1, 1,
-								  1, 1, 1, 1, 1};
-		setLetter(chars[chars.length - 1]);
-		int r = rnd.nextInt(100);
-		int cdf = 0;
-		for (int i = 0; i < chars.length; i++) {
-		    cdf += probabilities[i];
-		    if (r < cdf) {
-		        setLetter(chars[i]);
-		        break;
-		    }
-		}
 
-		/*Random r = new Random();
-		char c = (char)((int)'0' + r.nextInt(26));
-		setLetter(c);*/
+	public void setRandomLetters() {
+		for(int i = 0; i < 4; i++) {
+			bricks[i].setRandomLetter();
+		}
 	}
 
     public int minX()
     {
-      int m = coords[0][0];
+      int m = bricks[0].brickCoords[0];
       for (int i=0; i < 4; i++) {
-    	  m = Math.min(m, coords[i][0]);
+    	  m = Math.min(m, bricks[i].brickCoords[0]);
       }
       return m;
     }
@@ -105,9 +108,9 @@ public class Shape {
 
     public int minY() 
     {
-    	int m = coords[0][1];
+    	int m = bricks[0].brickCoords[1];
     	for (int i=0; i < 4; i++) {
-    		m = Math.min(m, coords[i][1]);
+    		m = Math.min(m, bricks[i].brickCoords[1]);
     	}
     	return m;
     }
@@ -119,12 +122,12 @@ public class Shape {
 
         Shape result = new Shape();
         result.pieceShape = pieceShape;
-        result.pieceLetter = pieceLetter;
-        result.pieceId = pieceId;
 
         for (int i = 0; i < 4; ++i) {
             result.setX(i, y(i));
             result.setY(i, -x(i));
+            result.bricks[i].brickLetter = bricks[i].brickLetter;
+            result.bricks[i].brickId = bricks[i].brickId;
         }
         return result;
     }
@@ -136,12 +139,12 @@ public class Shape {
 
         Shape result = new Shape();
         result.pieceShape = pieceShape;
-        result.pieceLetter = pieceLetter;
-        result.pieceId = pieceId;
 
         for (int i = 0; i < 4; ++i) {
             result.setX(i, -y(i));
             result.setY(i, x(i));
+            result.bricks[i].brickLetter = bricks[i].brickLetter;
+            result.bricks[i].brickId = bricks[i].brickId;
         }
         return result;
     }

@@ -12,7 +12,6 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -24,12 +23,14 @@ import tetraword.Shape.Tetrominoes;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
-	
+
     private ImageIcon ii;
     private JLabel picture;
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
+    final int BoardTop = 58;
+    final int BoardLeft = 120;
 
     Timer timer;
     boolean isFallingFinished = false; // la piece a-t-elle fini de tomber ?
@@ -41,30 +42,26 @@ public class Board extends JPanel implements ActionListener {
     //JLabel statusbar;
     Shape curPiece; // piece qui tombe                                 
     Tetrominoes[] board;
-    char[] letters;
-    int[] ids;
-    
-    int lastShapeId = -1;
-    String inputLetters = "";
-    int bestAnagram = 0;
-    double difficulty = 0.75;
-    int curLine;
-    ArrayList<Integer> inputIds = new ArrayList<Integer>();
-    
+    int[][][] bricks; // tableau qui contient l'id, la lettre et le clic pour chaque brique selon ses coordonnees dans le board
+    int lastShapeId = -4; // dernier id attribue a une brique
+
+    int curLine; // ligne sur laquelle l'utilisateur clique
+    String inputLetters = ""; // lettres saisies au clic par l'utilisateur
+    int bestAnagram = 0; // longueur du meilleur anagramme possible sur la ligne actuelle
+    double difficulty = 0.75; // difficulte des anagrammes
 
     public Board(GameFrame parent) {
        setFocusable(true);
        curPiece = new Shape();
-       timer = new Timer(400, this);
+       timer = new Timer(800, this); // vitesse de descente des pieces
        timer.start(); 
 
        /*statusbar =  parent.getStatusBar();*/
        board = new Tetrominoes[BoardWidth * BoardHeight];
-       letters = new char[BoardWidth * BoardHeight];
-       ids = new int[BoardWidth * BoardHeight];
+       bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
-       clearBoard();  
+       clearBoard();
     }
     
     // Verifie si la piece a fini de tomber
@@ -76,38 +73,19 @@ public class Board extends JPanel implements ActionListener {
             oneLineDown();
         }
     }
-
-
-    //int squareWidth() { return (int) getSize().getWidth() / BoardWidth; }
-    //int squareHeight() { return (int) getSize().getHeight() / BoardHeight; }
+    
     int squareWidth() { return (int) 279 / BoardWidth; }
     int squareHeight() { return (int) 570 / BoardHeight; }
     Tetrominoes shapeAt(int x, int y) { return board[(y * BoardWidth) + x]; }
-    char letterAt(int x, int y){ return letters[(y * BoardWidth) + x]; }
-    int idAt(int x, int y) { return ids[(y * BoardWidth) + x]; }
-    
+    int idAt(int x, int y) { return bricks[x][y][0]; }
+    char letterAt(int x, int y){ return (char)bricks[x][y][1]; }
+    int clickAt(int x, int y) { return bricks[x][y][2]; }
     String lettersAt(int y) {
-    	StringBuilder sb = new StringBuilder();;
-    	sb.append(letterAt(0, y));
-		int previousShapeId = idAt(0, y);
-		char previousShapeLetter = letterAt(0, y);
-		Tetrominoes previousShape = shapeAt(0, y);
-    	for(int i=1; i<BoardWidth; i++) {
-    		if(previousShapeId != idAt(i,y) ||
-    		   previousShapeLetter != letterAt(i,y) ||
-    		   previousShape != shapeAt(i,y))
-    		{
-    			if(letterAt(i,y) == '\0' || shapeAt(i,y) == Tetrominoes.NoShape) {
-    				sb.append("-");
-    			} else {
-    				sb.append(letterAt(i, y));
-    			}
-    		}
-    		previousShapeId = idAt(i, y);
-    		previousShapeLetter = letterAt(i, y);
-    		previousShape = shapeAt(i, y);
+    	StringBuilder sb = new StringBuilder();
+    	for(int i = 0; i < BoardWidth; i++) {
+    		sb.append(letterAt(i,y));
     	}
-    	//System.out.println("Les lettres à la ligne " + y + " sont " + sb);
+    	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
 
@@ -146,7 +124,7 @@ public class Board extends JPanel implements ActionListener {
     {
     	Properties options = new Properties(); 
     	
-    	// Création d'une instance de File pour le fichier de config
+    	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
@@ -157,7 +135,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Echec chargement");
     	}
     	
-    	/* Récupérer une propriété d'un fichier de configurations           */
+    	// Recuperer une propriete d'un fichier de configurations
    	 	String configUniv = options.getProperty("Univers"); 
    	 	
     	switch (configUniv)
@@ -183,31 +161,22 @@ public class Board extends JPanel implements ActionListener {
  	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));         
  	   	}
    	 	
-
         picture = new JLabel(new ImageIcon(ii.getImage()));
         picture.setSize(525, 700);
         add(picture);
         
-        // Ajout d'une image de fond
-        /*ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
-        picture = new JLabel(new ImageIcon(ii.getImage()));
-        picture.setSize(525, 700);
-        add(picture);*/
-        
     	super.paint(g);
 
         //Dimension size = getSize();
-        int boardTop = 58;
-        int boardLeft = 120;
 
         // Dessine toutes les formes, ou ce qu'il en reste, deja tombees
         for (int i = 0; i < BoardHeight; ++i) {
             for (int j = 0; j < BoardWidth; ++j) {
                 Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
-                char letter = letterAt(j, BoardHeight - i - 1);
+                String letter = Character.toString(letterAt(j, BoardHeight - i - 1));
                 if (shape != Tetrominoes.NoShape)
-                    drawSquare(g, boardLeft + j * squareWidth(),
-                               boardTop + i * squareHeight(),
+                    drawSquare(g, BoardLeft + j * squareWidth(),
+                               BoardTop + i * squareHeight(),
                                shape, letter);
             }
         }
@@ -217,9 +186,9 @@ public class Board extends JPanel implements ActionListener {
             for (int i = 0; i < 4; ++i) {
                 int x = curX + curPiece.x(i);
                 int y = curY - curPiece.y(i);
-                drawSquare(g, boardLeft + x * squareWidth(),
-                           boardTop + (BoardHeight - y - 1) * squareHeight(),
-                           curPiece.getShape(), curPiece.getLetter());
+                drawSquare(g, BoardLeft + x * squareWidth(),
+                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
+                           curPiece.getShape(), Character.toString(curPiece.getLetter(i)));
             }
         }
     }
@@ -246,7 +215,6 @@ public class Board extends JPanel implements ActionListener {
     {
         for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
             board[i] = Tetrominoes.NoShape;
-			/*letters[i] = '\0';*/
         }
     }
 
@@ -256,14 +224,15 @@ public class Board extends JPanel implements ActionListener {
             int x = curX + curPiece.x(i);
             int y = curY - curPiece.y(i);
             board[(y * BoardWidth) + x] = curPiece.getShape();
-            letters[(y * BoardWidth) + x] = curPiece.getLetter();
-            ids[(y * BoardWidth) + x] = curPiece.getId();
+            bricks[x][y][0] = curPiece.getId(i);
+            bricks[x][y][1] = curPiece.getLetter(i);
+            bricks[x][y][2] = curPiece.getClick(i);
         }
         
         /* TODO Verifier si des lignes sont pleines dans le jeu :
 		    for (int i = BoardHeight - 1; i >= 0; --i) {
 		    	if(isLineFull(i)) {
-		    		// Faire quelque chose
+		    		// Prevenir l'utilisateur qu'il peut faire des mots
 		    	}
 		    }
 		*/
@@ -274,10 +243,10 @@ public class Board extends JPanel implements ActionListener {
 
     private void newPiece()
     {
-        curPiece.setRandomShape();
-        curPiece.setRandomLetter();
-        this.lastShapeId += 1;
-        curPiece.setId(lastShapeId);
+		curPiece.setRandomShape();
+        curPiece.setRandomLetters();
+        lastShapeId += 4;
+        curPiece.setIds(lastShapeId);
         curX = BoardWidth / 2 + 1;
         curY = BoardHeight - 1 + curPiece.minY();
 
@@ -287,7 +256,6 @@ public class Board extends JPanel implements ActionListener {
             isStarted = false;
             //statusbar.setText("game over");
         }
-        
     }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
@@ -309,20 +277,30 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private boolean isWordCorrect() {
-    	boolean validWord = false;
-    	
-		// TODO On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
-		// bestAnagram =
-    	
-    	// Verifie si le mot n'est pas vide
-    	if(inputLetters != "" || inputLetters != null) {
-    		// Verifie si le mot respecte la difficulte
-    		if(inputLetters.length() >= (int)difficulty * bestAnagram) {
-    			// TODO Verifier si le mot est dans le dictionnaire
-    			validWord = true;
-    		}
-    	}
-    	return validWord;
+	    Dictionary dictionary = new Dictionary();
+	    boolean validWord = false;  
+
+	    //On adapte inputLetters aux methodes de dictionary
+	    inputLetters = inputLetters.toLowerCase();
+
+		//On recupere les lettres de la ligne
+		String inlineLetters = (lettersAt(curLine)).toLowerCase();
+		char tabInlineLetters[] = inlineLetters.toCharArray();
+
+		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
+		 String bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
+		 System.out.println(bestAnagram.length()+" "+ bestAnagram);    
+    
+		 // Verifie si le mot n'est pas vide
+		 if(inputLetters != "" || inputLetters != null) {
+			 // Verifie si le mot respecte la difficulte
+			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
+				 //Verifier si le mot est dans le dictionnaire
+				 validWord = dictionary.validateWord(inputLetters);
+				 System.out.println(validWord);     
+			 }
+		 }
+    return validWord;
     }
     
     private boolean isLineFull(int y) {
@@ -344,7 +322,7 @@ public class Board extends JPanel implements ActionListener {
     
     private void removeLine(int y) {
 		int numFullLines = 0;
-		
+
     	if(isWordCorrect() && isLineFull(y)) {
             
         	// Parcourir toutes les pieces
@@ -353,8 +331,15 @@ public class Board extends JPanel implements ActionListener {
                     ++numFullLines;
             		// Suppression de la ligne
             		board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
-                	letters[(k * BoardWidth) + j] = letterAt(j, k + 1);
-                	ids[(k * BoardWidth) + j] = idAt(j, k + 1);
+            		for(int i = 0; i < 4; i++) {
+            			//letters.put((k * BoardWidth) + j, letterAt(j, k + 1));
+                    	//letters[(k * BoardWidth) + j + i] = letterAt(j + i, k + 1);
+            			/*letters[j][k][0] = letterAt(j + i, k + 1);
+                    	ids[j][k][0] = idAt(j + i, k + 1);*/
+            			bricks[j][k][0] = idAt(j, k + 1);
+            			bricks[j][k][1] = letterAt(j, k + 1);
+            			bricks[j][k][2] = clickAt(j, k + 1);
+            		}
                 	
                 	// TODO Augmentation du score
             	}
@@ -368,6 +353,8 @@ public class Board extends JPanel implements ActionListener {
             curPiece.setShape(Tetrominoes.NoShape);
             repaint();
         }
+        
+        inputLetters = "";
     }
 
     /*private void removeFullLines()
@@ -411,7 +398,7 @@ public class Board extends JPanel implements ActionListener {
         }
 	}*/
 
-    private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, char letter)
+    private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
     {
         Color colors[] = { new Color(0, 0, 0), new Color(204, 102, 102), 
             new Color(102, 204, 102), new Color(102, 102, 204), 
@@ -436,21 +423,18 @@ public class Board extends JPanel implements ActionListener {
                          x + squareWidth() - 1, y + 1);
         
         // Ecriture de la lettre
-        String s = Character.toString(letter);
+        /*String s = Character.toString(letter);*/
 	    g.setColor(color.darker());    
-		g.drawString(s, x + 10, y + 18);
+		g.drawString(letter, x + 10, y + 18);
 
     }
     
-    private void anagram (int x, int y) {
-        int boardTop = 58;
-        int boardLeft = 120;
-        
+    private void anagram (int x, int y) {        
         // Conversion des pixels (recuperes au clic) en nombre de cases
         // x appartient a [0,9]
         // y appartient a [19,0]
-    	int newX = (x - boardLeft) / squareWidth();
-    	int newY = (BoardHeight - 1) - ((y - boardTop) / squareHeight());
+    	int newX = (x - BoardLeft) / squareWidth();
+    	int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
     	
     	// Verifie si la ligne est pleine
     	if(isLineFull(newY)) {
@@ -458,24 +442,16 @@ public class Board extends JPanel implements ActionListener {
     		if(curLine != newY) {
     			System.out.println("Saisie sur une nouvelle ligne");
     			inputLetters = "";
-    			inputIds.clear();
     		}
     		curLine = newY;
-    		// On vérifie que l'utilisateur clique sur la piece pour la premiere fois
-    		int curId = idAt(newX,newY);
-    		boolean firstTime = true;
-    		for(int i = 0; i < inputIds.size(); i++) {
-    			if(inputIds.get(i) == curId) {
-    				firstTime = false;
-    				System.err.println("La lettre a deja ete utilisee");
-    				break;
-    			}
-    	    }
-    		if(firstTime) {
-        		inputLetters += letterAt(newX,newY);
-        		inputIds.add(idAt(newX,newY));
-        		//System.out.println("La lettre a (" + newX + "," + newY + ") est " + letterAt(newX, newY));
-        		System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+
+    		// On verifie que l'utilisateur clique sur la piece pour la premiere fois
+    		if(bricks[newX][newY][2] == 0) {
+    			inputLetters += Character.toLowerCase(letterAt(newX,newY));
+    			bricks[newX][newY][2] = 1;
+    			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    		} else {
+    			System.err.println("La lettre a deja ete utilisee");
     		}
     	}
     	else {
