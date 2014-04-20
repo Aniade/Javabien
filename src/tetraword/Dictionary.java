@@ -144,7 +144,7 @@ public class Dictionary {
 		
 		// On parcourt tous les mots commencant par la lettre du mot saisi
 		while(find==false && first<end) {
-			System.out.println(wordList[first]);
+			//System.out.println(wordList[first]);
 			
 			//Si le mot correspond à un mot du dictionnaire on retourne true.
 		  	if(wordList[first].equals(word)==true) {
@@ -202,8 +202,8 @@ public class Dictionary {
 				
 				// Si le mot du dico contient exacetement les mêmes lettres alors on a un anagramme \o/
 				if(saisie.compareTo(word) == 0){
-					System.out.println("YOUHOUUUUUUUUU"); 
-					System.out.println(wordList[cpt]); 
+					//System.out.println("YOUHOUUUUUUUUU"); 
+					//System.out.println(wordList[cpt]); 
 					find = true;
 				}
 				/*
@@ -237,7 +237,7 @@ public class Dictionary {
 								valid++; 
 								/*Si valide est égale au bon nombre de lettre alors on a trouvé un des mots le plus long à partir de la saisie*/
 								if(valid == size-n) {
-									System.out.println("The word is :"+wordList[cpt]); 	
+									//System.out.println("The word is :"+wordList[cpt]); 	
 									find = true; 
 									break;
 								}
@@ -253,7 +253,7 @@ public class Dictionary {
 				}
 				//Si on a toujours pas fait de mot on incrémente n, pour voir si on peut faire un mot en enlevant n lettre de la saisie 
 				n++;
-				System.out.println(n); 
+				//System.out.println(n); 
 			}
 		}
 
