@@ -3,10 +3,12 @@ package tetraword;
 import java.awt.Color;
 //import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -15,24 +17,36 @@ import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import design.MenuButton;
 import tetraword.Shape.Tetrominoes;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
 
     private ImageIcon ii;
+    private ImageIcon btSound;
+    private ImageIcon btMute;
+    private ImageIcon btBreak;
     private JLabel picture;
+    private JLabel bt_sound;
+    private JLabel bt_break;
+    private JLabel pause;
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
-    final int BoardTop = 58;
+    final int BoardTop = 59;
     final int BoardLeft = 120;
+    final int GameWidth = 279;
+    final int GameHeight = 560;
 
     Timer timer;
+    private boolean isSound = true; // le son est-il active ?
     boolean isFallingFinished = false; // la piece a-t-elle fini de tomber ?
     boolean isStarted = false;
     boolean isPaused = false;
@@ -55,6 +69,7 @@ public class Board extends JPanel implements ActionListener {
 
     public Board(GameFrame parent) {
        setFocusable(true);
+       addBackground();
        curPiece = new Shape();
        curLine = -1;
        timer = new Timer(800, this); // vitesse de descente des pieces
@@ -80,8 +95,8 @@ public class Board extends JPanel implements ActionListener {
         }
     }
     
-    int squareWidth() { return (int) 279 / BoardWidth; }
-    int squareHeight() { return (int) 570 / BoardHeight; }
+    int squareWidth() { return (int) GameWidth / BoardWidth; }
+    int squareHeight() { return (int) GameHeight / BoardHeight; }
     Tetrominoes shapeAt(int x, int y) { return board[(y * BoardWidth) + x]; }
     int idAt(int x, int y) { return bricks[x][y][0]; }
     char letterAt(int x, int y){ return (char)bricks[x][y][1]; }
@@ -117,25 +132,137 @@ public class Board extends JPanel implements ActionListener {
         isPaused = !isPaused;
         if (isPaused) {
             timer.stop();
+            breakMenu();
+    		System.out.println("Pause");
             //statusbar.setText("paused");
         } else {
             timer.start();
+            pause.setVisible(false);
+            picture.setVisible(true);
             //statusbar.setText(String.valueOf(numLinesRemoved));
         }
         repaint();
     }
     
-    // Dessine tous les objets
-    public void paint(Graphics g)
-    {
-    	Properties options = new Properties(); 
-    	
+	//Menu pause
+    public void breakMenu(){
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/bg_accueil.jpg"));         
+	   	 	
+	    pause = new JLabel(new ImageIcon(bgBreak.getImage()));
+	    pause.setSize(525, 700);
+	    add(pause);
+	    pause.setVisible(true);  
+	    picture.setVisible(false);
+	    
+        /*Couleur des bouton menu*/
+        final Color blue =new Color(46,49,146);
+        final Color black =new Color(0,0,0);
+        final Color white =new Color(255,255,255);
+        
+        //Bouton Continuer
+        final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, black, 200, false);
+        pause.add(bt_continue);
+        /*On affiche la page du jeu*/
+        bt_continue.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_continue.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_continue.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                pause(); 
+        	}
+        });
+        
+        //Bouton Nouvelle Partie
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
+        pause.add(bt_start);
+        /*On affiche la page du jeu*/
+        bt_start.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_start.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_start.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                //On ouvre une fenetre avec une nouvelle partie
+                GameFrame game = new GameFrame();
+                game.setLocationRelativeTo(null);
+                game.setVisible(true);
+                //On ferme l'ancienne fenetre
+                Window window = SwingUtilities.windowForComponent(pause);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+             
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}
+        	}
+        });   
+        //Bouton Menu principal
+        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
+        pause.add(bt_menu);
+        bt_menu.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                MainMenu menu = new MainMenu();
+                //Ouvrir au même endroit que le menu
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+                Window window = SwingUtilities.windowForComponent(pause);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+             
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}  
+        	}
+        });
+        
+        // Bouton Quitter
+        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
+        pause.add(bt_exit);
+        // On quitte le jeu
+        bt_exit.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		System.exit(0);
+        	}
+        });
+    }
+    
+    public void addBackground(){
+    	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
-
-    	//Chargement du fichier de configuration
+    	
+    	// Chargement du fichier de configuration
     	try {
-    	options.load(new FileInputStream(fichierConfig));
+    		options.load(new FileInputStream(fichierConfig));
     	} 
     	catch(IOException e) {
     		System.out.println("Echec chargement");
@@ -149,18 +276,30 @@ public class Board extends JPanel implements ActionListener {
  	   	  case "western":
  	        // Ajout d'une image de fond
  	        ii = new ImageIcon(this.getClass().getResource("pictures/cowboys.jpg"));
+ 	        btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
+ 	        btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
+ 	        btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
  	   	    break;
  	   	  case "kungfu":
  	        // Ajout d'une image de fond
  	        ii = new ImageIcon(this.getClass().getResource("pictures/ninjas.jpg"));
+ 	        btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
+ 	        btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
+ 	        btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
  	   	    break; 
  	   	  case "pirate":
  	         // Ajout d'une image de fond
  	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
+	 	     btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
+ 	         btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
+ 	         btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
  	   	    break; 
  	   	  case "batman":
  	         // Ajout d'une image de fond
  	         ii = new ImageIcon(this.getClass().getResource("pictures/batman.jpg"));
+	 	     btSound = new ImageIcon(this.getClass().getResource("pictures/sound_batman.png"));
+	 	     btMute = new ImageIcon(this.getClass().getResource("pictures/mute_batman.png"));
+	 	     btBreak = new ImageIcon(this.getClass().getResource("pictures/break_batman.png"));  
  	   	    break; 
  	   	  default:
  	         // Ajout d'une image de fond
@@ -171,32 +310,71 @@ public class Board extends JPanel implements ActionListener {
         picture.setSize(525, 700);
         add(picture);
         
+    	// Bouton pause
+        bt_break = new JLabel(new ImageIcon(btBreak.getImage()));       
+        bt_break.setBounds(430, 10, 30, 30); 
+        picture.add(bt_break);
+        
+        bt_break.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        	   pause();
+        	}
+        });
+    
+        // Gestion du son
+        bt_sound = new JLabel(new ImageIcon(btSound.getImage()));       
+        bt_sound.setBounds(470, 10, 30, 30); 
+        picture.add(bt_sound);
+        
+        bt_sound.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		if(isSound){
+	        		bt_sound.setIcon(btMute);
+	        		System.out.println("Et je coupe le son (mais en fé il n'en a pas :o)");
+	        		isSound = false;
+        		}
+        		else{
+        			bt_sound.setIcon(btSound);
+	        		System.out.println("Et je remets le son");
+	        		isSound = true;
+        		}
+        	}
+        });
+    }
+    
+    // Dessine tous les objets
+    public void paint(Graphics g)
+    {   
     	super.paint(g);
 
-        //Dimension size = getSize();
-
-        // Dessine toutes les formes, ou ce qu'il en reste, deja tombees
-        for (int i = 0; i < BoardHeight; ++i) {
-            for (int j = 0; j < BoardWidth; ++j) {
-                Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
-                String letter = Character.toString(letterAt(j, BoardHeight - i - 1));
-                if (shape != Tetrominoes.NoShape)
-                    drawSquare(g, BoardLeft + j * squareWidth(),
-                               BoardTop + i * squareHeight(),
-                               shape, letter);
+        // Dimension size = getSize();
+    	
+    	if(!isPaused) {
+    		// Dessine toutes les formes, ou ce qu'il en reste, deja tombees
+            for (int i = 0; i < BoardHeight; ++i) {
+                for (int j = 0; j < BoardWidth; ++j) {
+                    Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
+                    String letter = Character.toString(letterAt(j, BoardHeight - i - 1));
+                    if (shape != Tetrominoes.NoShape)
+                        drawSquare(g, BoardLeft + j * squareWidth(),
+                                   BoardTop + i * squareHeight(),
+                                   shape, letter);
+                }
             }
-        }
 
-        // Dessine la piece en train de tomber
-        if (curPiece.getShape() != Tetrominoes.NoShape) {
-            for (int i = 0; i < 4; ++i) {
-                int x = curX + curPiece.x(i);
-                int y = curY - curPiece.y(i);
-                drawSquare(g, BoardLeft + x * squareWidth(),
-                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
-                           curPiece.getShape(), Character.toString(curPiece.getLetter(i)));
+            // Dessine la piece en train de tomber
+            if (curPiece.getShape() != Tetrominoes.NoShape) {
+                for (int i = 0; i < 4; ++i) {
+                    int x = curX + curPiece.x(i);
+                    int y = curY - curPiece.y(i);
+                    drawSquare(g, BoardLeft + x * squareWidth(),
+                               BoardTop + (BoardHeight - y - 1) * squareHeight(),
+                               curPiece.getShape(), Character.toString(curPiece.getLetter(i)));
+                }
             }
-        }
+    	}
     }
 
     private void dropDown()
@@ -236,14 +414,6 @@ public class Board extends JPanel implements ActionListener {
             bricks[x][y][1] = curPiece.getLetter(i);
             bricks[x][y][2] = curPiece.getClick(i);
         }
-        
-        /* TODO Verifier si des lignes sont pleines dans le jeu :
-		    for (int i = BoardHeight - 1; i >= 0; --i) {
-		    	if(isLineFull(i)) {
-		    		// Prevenir l'utilisateur qu'il peut faire des mots
-		    	}
-		    }
-		*/
 
         if (!isFallingFinished)
             newPiece();
@@ -319,18 +489,16 @@ public class Board extends JPanel implements ActionListener {
     private boolean isLineFull(int y) {
     	boolean lineIsFull = true;
     	
-    	// On parcourt toutes les lignes du jeu
-    	//for (int i = BoardHeight - 1; i >= 0; --i) { 
-            // On parcourt toutes les colonnes du jeu
-            for (int j = 0; j < BoardWidth; ++j) {
-            	// Si on trouve des cases vides, la ligne n'est pas pleine
-                if (shapeAt(j, y) == Tetrominoes.NoShape) {
-                    lineIsFull = false;
-                    break;
-                }
+        // On parcourt toutes les colonnes du jeu
+        for (int j = 0; j < BoardWidth; ++j) {
+        	// Si on trouve des cases vides, la ligne n'est pas pleine
+            if (shapeAt(j, y) == Tetrominoes.NoShape) {
+                lineIsFull = false;
+                break;
             }
-        //}
-    	return lineIsFull;
+        }
+        
+        return lineIsFull;
     }
     
     private void removeLine(int y) {
@@ -366,48 +534,7 @@ public class Board extends JPanel implements ActionListener {
         inputLetters = "";
         curLine = -1;
     }
-
-    /*private void removeFullLines()
-    {
-        int numFullLines = 0;
-
-        for (int i = BoardHeight - 1; i >= 0; --i) {
-        	//
-        	//System.out.println(lettersAt(19));
-        	//
-        	
-            boolean lineIsFull = true;
-
-            for (int j = 0; j < BoardWidth; ++j) {
-                if (shapeAt(j, i) == Tetrominoes.NoShape) {
-                    lineIsFull = false;
-                    break;
-                }
-            }
-
-            if (lineIsFull) {
-                ++numFullLines;
-                
-                // Suppression des lignes pleines
-                for (int k = i; k < BoardHeight - 1; ++k) {
-                    for (int j = 0; j < BoardWidth; ++j) {
-                    	board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
-                    	//letters[(k * BoardWidth) + j] = letterAt(j, k + 1);
-                    	//ids[(k * BoardWidth) + j] = idAt(j, k + 1);
-                    }
-                }
-            }
-        }
-
-        if (numFullLines > 0) {
-            numLinesRemoved += numFullLines;
-            //statusbar.setText(String.valueOf(numLinesRemoved));
-            isFallingFinished = true;
-            curPiece.setShape(Tetrominoes.NoShape);
-            repaint();
-        }
-	}*/
-
+    
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
     {
         Color colors[] = { new Color(0, 0, 0), new Color(204, 102, 102), 
@@ -482,9 +609,13 @@ public class Board extends JPanel implements ActionListener {
     	public void mouseClicked(MouseEvent e)
         {
 	    	// Verifie si on clique dans l'espace du jeu
-	    	//if(e.getX() >= BoardLeft && e.getX() <= BoardLeft+270 && e.getY() >= BoardTop && e.getY() >= BoardTop+558) {
+	    	if(e.getX() >= BoardLeft && e.getX() <= (BoardLeft+GameWidth) && e.getY() >= BoardTop && e.getY() <= (BoardTop+GameHeight)) {
+	    		//System.out.println("Clic dans le bidule");
 	    		anagram(e.getX(), e.getY());
-	    	//}
+	    	}
+	    	else {
+	    		//System.out.println("Clic ailleurs");
+	    	}
         } 
 		@Override
 		public void mouseEntered(MouseEvent arg0) { /* Auto-generated method stub */ }
