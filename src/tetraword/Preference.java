@@ -23,7 +23,7 @@ import design.Button;
 
 @SuppressWarnings("serial")
 public class Preference extends JFrame {
-	private JPanel panel;
+    private JPanel panel;
     private ImageIcon ii;
     private JLabel picture;
     private int debutant = 0, amateur = 0,  expert = 0;
@@ -32,9 +32,9 @@ public class Preference extends JFrame {
     private ImageIcon select_english_bw, select_english, select_francais, select_francais_bw, select_kungfu, select_kungfu_bw, select_cowboy, select_cowboy_bw, select_pirate, select_pirate_bw, select_batman, select_batman_bw;
 
     public Preference(){  	    	
-    	// création d'une instance de Properties
+    	// crï¿½ation d'une instance de Properties
     	final Properties options = new Properties(); 
-    	// Création d'une instance de File pour le fichier de config
+    	// Crï¿½ation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
@@ -59,7 +59,7 @@ public class Preference extends JFrame {
 		level.setFont(font);
 		level.setForeground(blue);
 		level.setBounds(180, 0, 300, 100);
-		panel.add(level);
+		add(level);
 
 		final ImageIcon select_debutant = new ImageIcon(this.getClass().getResource("pictures/select_debutant.png"));
         bt_debutant = new JButton(select_debutant);
@@ -85,7 +85,7 @@ public class Preference extends JFrame {
         		amateur = 0;
         		expert = 0;
         		bt_debutant.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-            	/*Enregistrer une propriété dans le fichier de configurations */
+            	/*Enregistrer une propriï¿½tï¿½ dans le fichier de configurations */
         	    options.setProperty("Level", "debutant");
     	    	try {
     	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
@@ -120,7 +120,7 @@ public class Preference extends JFrame {
         		bt_expert.setBorder(null);
         		bt_debutant.setBorder(null);
         		bt_amateur.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-            	/*Enregistrer une propriété dans le fichier de configurations */
+            	/*Enregistrer une propriï¿½tï¿½ dans le fichier de configurations */
         	    options.setProperty("Level", "amateur");
     	    	try {
     	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
@@ -155,7 +155,7 @@ public class Preference extends JFrame {
         		amateur = 0;
         		debutant = 0;
         		bt_expert.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-            	/*Enregistrer une propriété dans le fichier de configurations */
+            	/*Enregistrer une propriï¿½tï¿½ dans le fichier de configurations */
         	    options.setProperty("Level", "expert");
     	    	try{
     	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
@@ -171,8 +171,8 @@ public class Preference extends JFrame {
 		panel.add(bt_expert);
 		
         //Affichage des reglages
-    	// Récupérer une propriété d'un fichier de configurations
-   	 	String configLevel = options.getProperty("Level"); // Trouve la valeur associée à la clef "Level"
+    	// Rï¿½cupï¿½rer une propriï¿½tï¿½ d'un fichier de configurations
+   	 	String configLevel = options.getProperty("Level"); // Trouve la valeur associï¿½e ï¿½ la clef "Level"
    	 	System.out.println(configLevel);
    	 	
    	 	switch (configLevel)
@@ -358,8 +358,8 @@ public class Preference extends JFrame {
         });
         
         //Affichage des reglages
-     	// Récupérer une propriété d'un fichier de configuration
-        String configUniv = options.getProperty("Univers"); // Trouve la valeur associée à la clef "Univers"
+     	// Rï¿½cupï¿½rer une propriï¿½tï¿½ d'un fichier de configuration
+        String configUniv = options.getProperty("Univers"); // Trouve la valeur associï¿½e ï¿½ la clef "Univers"
         System.out.println(configUniv);
     	 	
     	switch (configUniv)
@@ -474,8 +474,8 @@ public class Preference extends JFrame {
         });
         
         //Affichage des reglages
-    	// Récupérer une propriété d'un fichier de configurations
-   	 	String configDico = options.getProperty("Dictionary"); // Trouve la valeur associée à la clef "Dictionary"
+    	// Rï¿½cupï¿½rer une propriï¿½tï¿½ d'un fichier de configurations
+   	 	String configDico = options.getProperty("Dictionary"); // Trouve la valeur associï¿½e ï¿½ la clef "Dictionary"
    	 	System.out.println(configDico);
    	 	
    	 	switch (configDico)
@@ -518,7 +518,7 @@ public class Preference extends JFrame {
         picture = new JLabel(new ImageIcon(ii.getImage()));
         add(picture);  
         
-        setTitle("Préférences");        
+        setTitle("Prï¿½fï¿½rences");        
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setSize(525,700);
