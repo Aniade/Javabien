@@ -14,7 +14,7 @@ import design.MenuButton;
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {
 
-	private JPanel panel;
+    private JPanel panel;
     private ImageIcon ii;
     private JLabel picture;
 	
@@ -24,7 +24,7 @@ public class MainMenu extends JFrame {
     	panel.setLayout(null);
     	panel.setOpaque(false);
     	panel.setSize(400,500);
-        getContentPane().add(panel);  
+        add(panel);  
         
         /*Couleur des bouton menu*/
         final Color blue =new Color(46,49,146);
@@ -48,7 +48,7 @@ public class MainMenu extends JFrame {
         	public void mouseClicked(MouseEvent e) {
                 System.out.println("New Game - button is working");
                 GameFrame game = new GameFrame();
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au mï¿½me endroit que le menu
                 game.setLocationRelativeTo(null);
                 game.setVisible(true);
                 dispose();  
@@ -84,7 +84,7 @@ public class MainMenu extends JFrame {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Help help = new Help();
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au mï¿½me endroit que le menu
                 help.setLocationRelativeTo(null);
                 help.setVisible(true);
                 dispose();  
@@ -92,8 +92,8 @@ public class MainMenu extends JFrame {
         });
 
         
-        //Bouton Préférences
-        final MenuButton bt_preference = new MenuButton("Préférences", blue, black, 373, false);
+        //Bouton Prï¿½fï¿½rences
+        final MenuButton bt_preference = new MenuButton("Prï¿½fï¿½rences", blue, black, 373, false);
         panel.add(bt_preference);
         bt_preference.addMouseListener(new MouseAdapter() {
         	@Override
@@ -107,7 +107,7 @@ public class MainMenu extends JFrame {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Preference preference = new Preference();
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au mï¿½me endroit que le menu
                 preference.setLocationRelativeTo(null);
                 preference.setVisible(true);
                 dispose();  
