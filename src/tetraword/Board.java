@@ -47,18 +47,24 @@ public class Board extends JPanel implements ActionListener {
 
     int curLine; // ligne sur laquelle l'utilisateur clique
     String inputLetters = ""; // lettres saisies au clic par l'utilisateur
-    int bestAnagram = 0; // longueur du meilleur anagramme possible sur la ligne actuelle
+    String bestAnagram = ""; // longueur du meilleur anagramme possible sur la ligne actuelle
     double difficulty = 0.75; // difficulte des anagrammes
+    
+    int score;
+    int level;
 
     public Board(GameFrame parent) {
        setFocusable(true);
        curPiece = new Shape();
+       curLine = -1;
        timer = new Timer(800, this); // vitesse de descente des pieces
-       timer.start(); 
+       timer.start();
 
        /*statusbar =  parent.getStatusBar();*/
        board = new Tetrominoes[BoardWidth * BoardHeight];
        bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
+       score = 0;
+       level = 1;
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
        clearBoard();
@@ -201,6 +207,8 @@ public class Board extends JPanel implements ActionListener {
                 break;
             --newY;
         }
+        score += 5;
+        level = score/100 + 1;
         pieceDropped();
     }
 
@@ -239,6 +247,10 @@ public class Board extends JPanel implements ActionListener {
 
         if (!isFallingFinished)
             newPiece();
+        	score += 5;
+            level = score/100 + 1;
+        	System.out.println("Score : " + score);
+        	System.out.println("Niveau : " + level);
     }
 
     private void newPiece()
@@ -288,19 +300,20 @@ public class Board extends JPanel implements ActionListener {
 		char tabInlineLetters[] = inlineLetters.toCharArray();
 
 		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
-		 String bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
-		 System.out.println(bestAnagram.length()+" "+ bestAnagram);    
+		 bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
     
 		 // Verifie si le mot n'est pas vide
-		 if(inputLetters != "" || inputLetters != null) {
+		 if(inputLetters != "" || inputLetters != null || inputLetters.length() != 0) {
 			 // Verifie si le mot respecte la difficulte
 			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
 				 //Verifier si le mot est dans le dictionnaire
+				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(inputLetters);
-				 System.out.println(validWord);     
+				 if(validWord) System.out.println("Le mot est correct");
+				 if(!validWord) System.out.println("Le mot est incorrect");
 			 }
 		 }
-    return validWord;
+		 return validWord;
     }
     
     private boolean isLineFull(int y) {
@@ -321,40 +334,37 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void removeLine(int y) {
-		int numFullLines = 0;
-
     	if(isWordCorrect() && isLineFull(y)) {
-            
+    		++numLinesRemoved;
+    		
+    		// Augmentation du score
+    		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+    		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+    		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
+    		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
+            level = score/100 + 1;
         	// Parcourir toutes les pieces
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
-                    ++numFullLines;
             		// Suppression de la ligne
             		board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
-            		for(int i = 0; i < 4; i++) {
-            			//letters.put((k * BoardWidth) + j, letterAt(j, k + 1));
-                    	//letters[(k * BoardWidth) + j + i] = letterAt(j + i, k + 1);
-            			/*letters[j][k][0] = letterAt(j + i, k + 1);
-                    	ids[j][k][0] = idAt(j + i, k + 1);*/
-            			bricks[j][k][0] = idAt(j, k + 1);
-            			bricks[j][k][1] = letterAt(j, k + 1);
-            			bricks[j][k][2] = clickAt(j, k + 1);
-            		}
-                	
-                	// TODO Augmentation du score
+        			bricks[j][k][0] = idAt(j, k + 1);
+        			bricks[j][k][1] = letterAt(j, k + 1);
+        			bricks[j][k][2] = clickAt(j, k + 1);
             	}
             }
     	}
-
-        if (numFullLines > 0) {
-            numLinesRemoved += numFullLines;
-            //statusbar.setText(String.valueOf(numLinesRemoved));
-            isFallingFinished = true;
-            curPiece.setShape(Tetrominoes.NoShape);
-            repaint();
+    	else if(isLineFull(y)) {
+            for (int k = y; k < BoardHeight - 1; ++k) {
+            	for (int j = 0; j < BoardWidth; ++j) {
+            		// Les lettres ne sont plus considerees comme deja cliquees
+            		bricks[j][k][2] = 0;
+            	}
+            }
         }
         
         inputLetters = "";
+        curLine = -1;
     }
 
     /*private void removeFullLines()
@@ -433,6 +443,7 @@ public class Board extends JPanel implements ActionListener {
         // Conversion des pixels (recuperes au clic) en nombre de cases
         // x appartient a [0,9]
         // y appartient a [19,0]
+    	//System.out.println("(" + x + "," + y + ")");
     	int newX = (x - BoardLeft) / squareWidth();
     	int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
     	
@@ -456,7 +467,7 @@ public class Board extends JPanel implements ActionListener {
     	}
     	else {
     		// TODO Ecrire un message pour dire que la ligne n'est pas pleine
-    		bestAnagram = -1;
+    		bestAnagram = "";
     		System.err.println("La ligne n'est pas pleine");
     	}
     }
@@ -470,7 +481,10 @@ public class Board extends JPanel implements ActionListener {
 		@Override
     	public void mouseClicked(MouseEvent e)
         {
-			anagram(e.getX(), e.getY());
+	    	// Verifie si on clique dans l'espace du jeu
+	    	//if(e.getX() >= BoardLeft && e.getX() <= BoardLeft+270 && e.getY() >= BoardTop && e.getY() >= BoardTop+558) {
+	    		anagram(e.getX(), e.getY());
+	    	//}
         } 
 		@Override
 		public void mouseEntered(MouseEvent arg0) { /* Auto-generated method stub */ }
@@ -519,7 +533,8 @@ public class Board extends JPanel implements ActionListener {
 	    			oneLineDown();
 	    			break;
 	    		case KeyEvent.VK_ENTER:
-	    			removeLine(curLine);
+	    			if(curLine != -1)
+	    				removeLine(curLine);
 	    			break;
 	    		/*case 'd':
 					oneLineDown();
