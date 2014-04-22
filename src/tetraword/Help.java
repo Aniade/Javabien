@@ -16,7 +16,7 @@ public class Help extends JFrame {
     	panel.setLayout(null);
     	panel.setOpaque(false);
     	panel.setSize(400,500);
-        getContentPane().add(panel);
+        add(panel);
         
      	//Add background       
         ii = new ImageIcon(this.getClass().getResource("bg_accueil.jpg"));
