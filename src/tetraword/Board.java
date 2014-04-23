@@ -14,7 +14,9 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Properties;
+import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -24,6 +26,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import design.MenuButton;
+import tetraword.Bonus.Bonuses;
 import tetraword.Shape.Tetrominoes;
 
 @SuppressWarnings("serial")
@@ -66,11 +69,16 @@ public class Board extends JPanel implements ActionListener {
     
     int score;
     int level;
+    
+    LinkedList<Bonus> bonuses;
+	private Bonus curBonus;
+	private Bonuses[] bonus;
 
     public Board(GameFrame parent) {
        setFocusable(true);
        addBackground();
        curPiece = new Shape();
+       curBonus = new Bonus();
        curLine = -1;
        timer = new Timer(800, this); // vitesse de descente des pieces
        timer.start();
@@ -78,11 +86,15 @@ public class Board extends JPanel implements ActionListener {
        /*statusbar =  parent.getStatusBar();*/
        board = new Tetrominoes[BoardWidth * BoardHeight];
        bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
+       bonus = new Bonuses[BoardWidth * BoardHeight];
        score = 0;
        level = 1;
+       bonuses = new LinkedList<Bonus>();
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
        clearBoard();
+       
+       newBonus();
     }
     
     // Verifie si la piece a fini de tomber
@@ -109,6 +121,7 @@ public class Board extends JPanel implements ActionListener {
     	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
+    Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
 
     public void start()
     {
@@ -201,12 +214,12 @@ public class Board extends JPanel implements ActionListener {
                 Window window = SwingUtilities.windowForComponent(pause);
             	if (window instanceof JFrame) {
             		JFrame frame = (JFrame) window;
-             
             		frame.setVisible(false);
             		frame.dispose();
             	}
         	}
-        });   
+        });
+        
         //Bouton Menu principal
         final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
         pause.add(bt_menu);
@@ -228,7 +241,6 @@ public class Board extends JPanel implements ActionListener {
                 Window window = SwingUtilities.windowForComponent(pause);
             	if (window instanceof JFrame) {
             		JFrame frame = (JFrame) window;
-             
             		frame.setVisible(false);
             		frame.dispose();
             	}  
@@ -347,9 +359,16 @@ public class Board extends JPanel implements ActionListener {
     // Dessine tous les objets
     public void paint(Graphics g)
     {   
+    	// TODO
+    	/*Random r = new Random();
+    	if(Math.abs(r.nextInt()) % 10 + 1 == 1 && curBonus == null) {
+    		System.out.println("Creation d'un bonus");
+    		//newBonus();
+    	}*/
+    	
     	super.paint(g);
 
-        // Dimension size = getSize();
+        // Dimension size = getSize();    	    	
     	
     	if(!isPaused) {
     		// Dessine toutes les formes, ou ce qu'il en reste, deja tombees
@@ -374,6 +393,15 @@ public class Board extends JPanel implements ActionListener {
                                curPiece.getShape(), Character.toString(curPiece.getLetter(i)));
                 }
             }
+            
+            // Dessine le bonus
+            if(curBonus.getBonus() != Bonuses.NoBonus) {
+            	int x = curBonus.x();
+                int y = curBonus.y();
+                drawBonus(g, BoardLeft + x * squareWidth(),
+                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
+                           curBonus.getBonus());
+            }
     	}
     }
 
@@ -391,8 +419,8 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void oneLineDown()
-    {
-        if (!tryMove(curPiece, curX, curY - 1))
+    {        
+    	if (!tryMove(curPiece, curX, curY - 1))
             pieceDropped();
     }
 
@@ -401,6 +429,7 @@ public class Board extends JPanel implements ActionListener {
     {
         for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
             board[i] = Tetrominoes.NoShape;
+            bonus[i] = Bonuses.NoBonus;
         }
     }
 
@@ -409,18 +438,20 @@ public class Board extends JPanel implements ActionListener {
         for (int i = 0; i < 4; ++i) {
             int x = curX + curPiece.x(i);
             int y = curY - curPiece.y(i);
+            
             board[(y * BoardWidth) + x] = curPiece.getShape();
             bricks[x][y][0] = curPiece.getId(i);
             bricks[x][y][1] = curPiece.getLetter(i);
             bricks[x][y][2] = curPiece.getClick(i);
+            bonus[(y * BoardWidth) + x] = curBonus.getBonus();
         }
 
         if (!isFallingFinished)
             newPiece();
         	score += 5;
             level = score/100 + 1;
-        	System.out.println("Score : " + score);
-        	System.out.println("Niveau : " + level);
+        	//System.out.println("Score : " + score);
+        	//System.out.println("Niveau : " + level);
     }
 
     private void newPiece()
@@ -439,6 +470,18 @@ public class Board extends JPanel implements ActionListener {
             //statusbar.setText("game over");
         }
     }
+    
+    private void newBonus()
+    {
+    	curBonus.setRandomBonus();
+    	curBonus.setRandomX();
+    	curBonus.setRandomY();
+    	while(shapeAt(curBonus.x(), curBonus.y()) != Tetrominoes.NoShape) {
+    		curBonus.setRandomX();
+        	curBonus.setRandomY();
+    	}
+    	System.out.println("Bonus (" + curBonus.x() + "," + curBonus.y() + ")");
+    }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
     {
@@ -453,8 +496,41 @@ public class Board extends JPanel implements ActionListener {
 
         curPiece = newPiece;
         curX = newX;
-        curY = newY;
+        curY = newY; 
+        
+        if (curBonus.getBonus() != Bonuses.NoBonus) {
+        	// Verifie la collision entre la piece qui tombe et le bonus
+        	for(int i = 0; i < 4; i++) {
+    	    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
+    	        //System.out.println("Bonus : (" + curBonus.x() + ";" + curBonus.y() + ")");
+    	        if((curX + curPiece.x(i)) == curBonus.x() && (curY + curPiece.y(i)) == curBonus.y()) {
+    	        	// TODO
+    	        	System.out.println("Collision");
+    	        	bonuses.add(curBonus);
+    	        	curBonus = new Bonus();
+    	        }
+            }
+        	
+        	// Verifie la collision entre les pieces en bas et le bonus
+        	/*for (int i = 0; i < BoardHeight; ++i) {
+                for (int j = 0; j < BoardWidth; ++j) {
+                	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
+                    if (shape != Tetrominoes.NoShape) {
+                    	bonuses.add(curBonus);
+                    	curBonus = new Bonus();
+                    }
+                }
+            }*/
+        } else {
+        	Random r = new Random();
+        	int x = Math.abs(r.nextInt()) % 10 + 1;
+        	if(x == 1) {
+        		curBonus.setRandomBonus();
+        	}
+        }
+    	        
         repaint();
+       
         return true;
     }
     
@@ -519,6 +595,7 @@ public class Board extends JPanel implements ActionListener {
         			bricks[j][k][0] = idAt(j, k + 1);
         			bricks[j][k][1] = letterAt(j, k + 1);
         			bricks[j][k][2] = clickAt(j, k + 1);
+        			bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
             	}
             }
     	}
@@ -533,6 +610,29 @@ public class Board extends JPanel implements ActionListener {
         
         inputLetters = "";
         curLine = -1;
+    }
+    
+    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
+    	Color colors[] = { 
+    		new Color(0, 0, 0), new Color(102, 51, 51), 
+    		new Color(51, 102, 51), new Color(51, 51, 102)
+        };
+
+
+        Color color = colors[bonus.ordinal()];
+
+        g.setColor(color);
+        g.fillRect(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2);
+
+        g.setColor(color.brighter());
+        g.drawLine(x, y + squareHeight() - 1, x, y);
+        g.drawLine(x, y, x + squareWidth() - 1, y);
+
+        g.setColor(color.darker());
+        g.drawLine(x + 1, y + squareHeight() - 1,
+                         x + squareWidth() - 1, y + squareHeight() - 1);
+        g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
+                         x + squareWidth() - 1, y + 1);
     }
     
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
