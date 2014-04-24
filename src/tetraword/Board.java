@@ -41,6 +41,7 @@ public class Board extends JPanel implements ActionListener {
     private JLabel bt_sound;
     private JLabel bt_break;
     private JLabel pause;
+    private JLabel gameover;
     private JLabel printWord = new JLabel(); 
     private JLabel printScore;
     private JLabel printLevel; 
@@ -70,7 +71,7 @@ public class Board extends JPanel implements ActionListener {
     int curLine; // ligne sur laquelle l'utilisateur clique
     String inputLetters = ""; // lettres saisies au clic par l'utilisateur
     String bestAnagram = ""; // longueur du meilleur anagramme possible sur la ligne actuelle
-    double difficulty = 0.75; // difficulte des anagrammes
+    int difficulty = 30; // difficulte des anagrammes
     
     int score;
     int level;
@@ -81,7 +82,10 @@ public class Board extends JPanel implements ActionListener {
 
     public Board(GameFrame parent) {
        setFocusable(true);
+       //On charge l'interface graphique
        buildInterface();
+       //On adapte la diffuculte en fonction des preferences de l'utilisateur
+       setDifficulty();
        curPiece = new Shape();
        curBonus = new Bonus();
        curLine = -1;
@@ -98,7 +102,6 @@ public class Board extends JPanel implements ActionListener {
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
        clearBoard();
-       
        newBonus();
     }
     
@@ -493,6 +496,7 @@ public class Board extends JPanel implements ActionListener {
         curPiece.setRandomLetters();
         lastShapeId += 4;
         curPiece.setIds(lastShapeId);
+        
         curX = BoardWidth / 2 + 1;
         curY = BoardHeight - 1 + curPiece.minY();
 
@@ -500,8 +504,105 @@ public class Board extends JPanel implements ActionListener {
             curPiece.setShape(Tetrominoes.NoShape);
             timer.stop();
             isStarted = false;
+            gameOver();
             //statusbar.setText("game over");
         }
+    }
+    
+    public void gameOver(){
+    	clearBoard();
+	    picture.setVisible(false);
+	    
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/gameover.jpg"));         
+   	 	
+    	gameover = new JLabel(new ImageIcon(bgBreak.getImage()));
+    	gameover.setSize(525, 700);
+	    add(gameover);
+	    gameover.setVisible(true);
+	    
+	    
+	    
+        /*Couleur des bouton menu*/
+        final Color blue =new Color(46,49,146);
+        final Color black =new Color(0,0,0);
+        final Color white =new Color(255,255,255);
+        
+        
+        //Bouton Nouvelle Partie
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
+        gameover.add(bt_start);
+        /*On affiche la page du jeu*/
+        bt_start.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_start.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_start.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                //On ouvre une fenetre avec une nouvelle partie
+                GameFrame game = new GameFrame();
+                game.setLocationRelativeTo(null);
+                game.setVisible(true);
+                //On ferme l'ancienne fenetre
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}
+        	}
+        });
+        
+        //Bouton Menu principal
+        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
+        gameover.add(bt_menu);
+        bt_menu.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                MainMenu menu = new MainMenu();
+                //Ouvrir au m�me endroit que le menu
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}  
+        	}
+        });
+        
+        // Bouton Quitter
+        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
+        gameover.add(bt_exit);
+        // On quitte le jeu
+        bt_exit.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		System.exit(0);
+        	}
+        });
+    	 	
     }
     
     private void newBonus()
@@ -567,6 +668,39 @@ public class Board extends JPanel implements ActionListener {
         return true;
     }
     
+    private void setDifficulty(){
+       	Properties options = new Properties();     	
+    	// Creation d'une instance de File pour le fichier de config
+    	File fichierConfig = new File("conf/conf.properties"); 
+    	
+    	// Chargement du fichier de configuration
+    	try {
+    		options.load(new FileInputStream(fichierConfig));
+    	} 
+    	catch(IOException e) {
+    		System.out.println("Echec chargement");
+    	}
+    	
+    	// Recuperer une propriete d'un fichier de configurations
+   	 	String configLevel = options.getProperty("Level"); 
+   	 	
+    	switch (configLevel)
+ 	   	{
+ 	   	  case "debutant":
+ 	        difficulty = 30;
+ 	   	    break;
+ 	   	  case "amateur":
+ 	   		difficulty = 50;
+ 	   	    break; 
+ 	   	  case "expert":
+ 	   		difficulty = 70;
+ 	   	    break; 
+ 	   	  default:
+ 	   		difficulty = 30;       
+ 	   	}
+    	
+    }
+    
     private boolean isWordCorrect() {
 	    Dictionary dictionary = new Dictionary();
 	    boolean validWord = false;  
@@ -580,17 +714,20 @@ public class Board extends JPanel implements ActionListener {
 
 		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
 		 bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
-    
+		 
+			
+
 		 // Verifie si le mot n'est pas vide
 		 if(inputLetters != "" || inputLetters != null || inputLetters.length() != 0) {
 			 // Verifie si le mot respecte la difficulte
-			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
+			 if(inputLetters.length() >= ((bestAnagram.length()*(int)difficulty)/100)) {
 				 //Verifier si le mot est dans le dictionnaire
 				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(inputLetters);
 				 if(validWord) System.out.println("Le mot est correct");
 				 if(!validWord) System.out.println("Le mot est incorrect");
 			 }
+			 else System.out.println("Le mot n'est pas assez long CTB");
 		 }
 		 return validWord;
     }
@@ -735,6 +872,8 @@ public class Board extends JPanel implements ActionListener {
     		System.err.println("La ligne n'est pas pleine");
     	}
     }
+    
+    
     
     /*private void worddle(int x, int y) {
     	
