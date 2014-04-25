@@ -46,6 +46,9 @@ public class Board extends JPanel implements ActionListener {
     private JLabel printScore;
     private JLabel printLevel; 
     private JLabel printLine; 
+    private JLabel labelBonus = new JLabel(); 
+    private ImageIcon bonusImg;
+    private boolean getBonus = false;
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
@@ -527,11 +530,14 @@ public class Board extends JPanel implements ActionListener {
             
             // Dessine le bonus
             if(curBonus.getBonus() != Bonuses.NoBonus) {
-            	int x = curBonus.x();
-                int y = curBonus.y();
-                drawBonus(g, BoardLeft + x * squareWidth(),
-                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
-                           curBonus.getBonus());
+            	if(!getBonus){
+	            	int x = curBonus.x();
+	                int y = curBonus.y();
+	                drawBonus(BoardLeft + x * squareWidth(),
+	                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
+	                           curBonus.getBonus());
+	            	getBonus = true;
+            	}
             }
     	}
     }
@@ -639,6 +645,7 @@ public class Board extends JPanel implements ActionListener {
     	        	// TODO
     	        	System.out.println("Collision");
     	        	bonuses.add(curBonus);
+    	        	getBonus = false;
     	        	curBonus = new Bonus();
     	        }
             }
@@ -777,8 +784,33 @@ public class Board extends JPanel implements ActionListener {
         curLine = -1;
     }
     
-    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
-    	Color colors[] = { 
+private void drawBonus(int x, int y, Bonuses bonus) {
+    	
+    	switch (bonus)
+ 	   	{
+ 	   	  case Score:
+ 	        // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/+50.png"));
+ 	   	    break;
+ 	   	  case Worddle:
+ 	        // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/worddle.png"));
+ 	   	    break; 
+ 	   	  case Speed:
+ 	         // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/fusee.png"));
+ 	   	    break; 
+ 	   	  default:
+ 	         // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/explosion.png"));        
+ 	   	}
+    	
+        labelBonus.setIcon(bonusImg);	
+        labelBonus.setBounds(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2); 
+        picture.add(labelBonus);
+        System.out.println(bonus);
+        
+    	/*Color colors[] = { 
     		new Color(0, 0, 0), new Color(102, 51, 51), 
     		new Color(51, 102, 51), new Color(51, 51, 102)
         };
@@ -797,7 +829,7 @@ public class Board extends JPanel implements ActionListener {
         g.drawLine(x + 1, y + squareHeight() - 1,
                          x + squareWidth() - 1, y + squareHeight() - 1);
         g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + 1);
+                         x + squareWidth() - 1, y + 1);*/
     }
     
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
