@@ -82,9 +82,9 @@ public class Board extends JPanel implements ActionListener {
 
     public Board(GameFrame parent) {
        setFocusable(true);
-       //On charge l'interface graphique
+       // Chargement de l'interface graphique
        buildInterface();
-       //On adapte la diffuculte en fonction des preferences de l'utilisateur
+       // Adapation de la difficulte en fonction de preferences de l'utilisateur
        setDifficulty();
        curPiece = new Shape();
        curBonus = new Bonus();
@@ -102,6 +102,7 @@ public class Board extends JPanel implements ActionListener {
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
        clearBoard();
+       
        newBonus();
     }
     
@@ -129,7 +130,7 @@ public class Board extends JPanel implements ActionListener {
     	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
-    Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
+    //Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
 
     public void start()
     {
@@ -243,7 +244,7 @@ public class Board extends JPanel implements ActionListener {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 MainMenu menu = new MainMenu();
-                //Ouvrir au m�me endroit que le menu
+                //Ouvrir au même endroit que le menu
                 menu.setLocationRelativeTo(null);
                 menu.setVisible(true);
                 Window window = SwingUtilities.windowForComponent(pause);
@@ -273,6 +274,102 @@ public class Board extends JPanel implements ActionListener {
         		System.exit(0);
         	}
         });
+    }
+    
+    public void gameOver(){
+    	clearBoard();
+	    picture.setVisible(false);
+
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/gameover.jpg"));         
+   	 	
+    	gameover = new JLabel(new ImageIcon(bgBreak.getImage()));
+    	gameover.setSize(525, 700);
+	    add(gameover);
+	    gameover.setVisible(true);
+
+
+
+        /*Couleur des bouton menu*/
+        final Color blue =new Color(46,49,146);
+        final Color black =new Color(0,0,0);
+        final Color white =new Color(255,255,255);
+        
+        
+        //Bouton Nouvelle Partie
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
+        gameover.add(bt_start);
+        /*On affiche la page du jeu*/
+        bt_start.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_start.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_start.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                //On ouvre une fenetre avec une nouvelle partie
+                GameFrame game = new GameFrame();
+                game.setLocationRelativeTo(null);
+                game.setVisible(true);
+                //On ferme l'ancienne fenetre
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}
+        	}
+        });
+        
+        //Bouton Menu principal
+        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
+        gameover.add(bt_menu);
+        bt_menu.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                MainMenu menu = new MainMenu();
+                //Ouvrir au meme endroit que le menu
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}  
+        	}
+        });
+        
+        // Bouton Quitter
+        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
+        gameover.add(bt_exit);
+        // On quitte le jeu
+        bt_exit.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		System.exit(0);
+        	}
+        });
+    	 	
     }
     
     public void buildInterface(){
@@ -484,9 +581,7 @@ public class Board extends JPanel implements ActionListener {
             newPiece();
         	score += 5;
             level = score/100 + 1;
-        	//System.out.println("Score : " + score);
-        	//System.out.println("Niveau : " + level);
-			printScore.setText(Integer.toString(score)); 	
+            printScore.setText(Integer.toString(score)); 	
 			printLevel.setText(Integer.toString(level));
     }
 
@@ -496,7 +591,6 @@ public class Board extends JPanel implements ActionListener {
         curPiece.setRandomLetters();
         lastShapeId += 4;
         curPiece.setIds(lastShapeId);
-        
         curX = BoardWidth / 2 + 1;
         curY = BoardHeight - 1 + curPiece.minY();
 
@@ -507,102 +601,6 @@ public class Board extends JPanel implements ActionListener {
             gameOver();
             //statusbar.setText("game over");
         }
-    }
-    
-    public void gameOver(){
-    	clearBoard();
-	    picture.setVisible(false);
-	    
-    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/gameover.jpg"));         
-   	 	
-    	gameover = new JLabel(new ImageIcon(bgBreak.getImage()));
-    	gameover.setSize(525, 700);
-	    add(gameover);
-	    gameover.setVisible(true);
-	    
-	    
-	    
-        /*Couleur des bouton menu*/
-        final Color blue =new Color(46,49,146);
-        final Color black =new Color(0,0,0);
-        final Color white =new Color(255,255,255);
-        
-        
-        //Bouton Nouvelle Partie
-        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
-        gameover.add(bt_start);
-        /*On affiche la page du jeu*/
-        bt_start.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_start.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_start.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                //On ouvre une fenetre avec une nouvelle partie
-                GameFrame game = new GameFrame();
-                game.setLocationRelativeTo(null);
-                game.setVisible(true);
-                //On ferme l'ancienne fenetre
-                Window window = SwingUtilities.windowForComponent(gameover);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}
-        	}
-        });
-        
-        //Bouton Menu principal
-        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
-        gameover.add(bt_menu);
-        bt_menu.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                MainMenu menu = new MainMenu();
-                //Ouvrir au m�me endroit que le menu
-                menu.setLocationRelativeTo(null);
-                menu.setVisible(true);
-                Window window = SwingUtilities.windowForComponent(gameover);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}  
-        	}
-        });
-        
-        // Bouton Quitter
-        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
-        gameover.add(bt_exit);
-        // On quitte le jeu
-        bt_exit.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		System.exit(0);
-        	}
-        });
-    	 	
     }
     
     private void newBonus()
@@ -646,20 +644,21 @@ public class Board extends JPanel implements ActionListener {
             }
         	
         	// Verifie la collision entre les pieces en bas et le bonus
-        	/*for (int i = 0; i < BoardHeight; ++i) {
+        	for (int i = 0; i < BoardHeight; ++i) {
                 for (int j = 0; j < BoardWidth; ++j) {
                 	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
-                    if (shape != Tetrominoes.NoShape) {
+                	//Bonuses bonus = bonusAt(j, BoardHeight - i - 1);
+                    if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
                     	bonuses.add(curBonus);
                     	curBonus = new Bonus();
                     }
                 }
-            }*/
+            }
         } else {
         	Random r = new Random();
-        	int x = Math.abs(r.nextInt()) % 10 + 1;
+        	int x = Math.abs(r.nextInt()) % 10;
         	if(x == 1) {
-        		curBonus.setRandomBonus();
+        		newBonus();
         	}
         }
     	        
@@ -686,19 +685,18 @@ public class Board extends JPanel implements ActionListener {
    	 	
     	switch (configLevel)
  	   	{
- 	   	  case "debutant":
- 	        difficulty = 30;
- 	   	    break;
- 	   	  case "amateur":
- 	   		difficulty = 50;
- 	   	    break; 
- 	   	  case "expert":
- 	   		difficulty = 70;
- 	   	    break; 
- 	   	  default:
- 	   		difficulty = 30;       
+ 	   		case "debutant":
+ 	   			difficulty = 30;
+ 	   			break;
+ 	   		case "amateur":
+ 	   			difficulty = 50;
+ 	   			break; 
+ 	   		case "expert":
+ 	   			difficulty = 70;
+ 	   			break; 
+ 	   		default:
+ 	   			difficulty = 30;       
  	   	}
-    	
     }
     
     private boolean isWordCorrect() {
@@ -714,20 +712,17 @@ public class Board extends JPanel implements ActionListener {
 
 		 // On envoie toutes les lettres de la ligne pour trouver le meilleur anagramme
 		 bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
-		 
-			
-
+    
 		 // Verifie si le mot n'est pas vide
 		 if(inputLetters != "" || inputLetters != null || inputLetters.length() != 0) {
 			 // Verifie si le mot respecte la difficulte
-			 if(inputLetters.length() >= ((bestAnagram.length()*(int)difficulty)/100)) {
+			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
 				 //Verifier si le mot est dans le dictionnaire
 				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(inputLetters);
 				 if(validWord) System.out.println("Le mot est correct");
 				 if(!validWord) System.out.println("Le mot est incorrect");
 			 }
-			 else System.out.println("Le mot n'est pas assez long CTB");
 		 }
 		 return validWord;
     }
@@ -750,7 +745,6 @@ public class Board extends JPanel implements ActionListener {
     private void removeLine(int y) {
     	if(isWordCorrect() && isLineFull(y)) {
     		++numLinesRemoved;
-    		printLine.setText(Integer.toString(numLinesRemoved));
     		
     		// Augmentation du score
     		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
@@ -766,7 +760,7 @@ public class Board extends JPanel implements ActionListener {
         			bricks[j][k][0] = idAt(j, k + 1);
         			bricks[j][k][1] = letterAt(j, k + 1);
         			bricks[j][k][2] = clickAt(j, k + 1);
-        			bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
+        			//bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
             	}
             }
     	}
@@ -858,7 +852,7 @@ public class Board extends JPanel implements ActionListener {
     		if(bricks[newX][newY][2] == 0) {
     			inputLetters += Character.toLowerCase(letterAt(newX,newY));
     			bricks[newX][newY][2] = 1;
-    			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
     			printWord.setText(inputLetters);
     	    	printWord.setBounds(300,-25, 300, 100);     	
     	    	picture.add(printWord);
@@ -872,8 +866,6 @@ public class Board extends JPanel implements ActionListener {
     		System.err.println("La ligne n'est pas pleine");
     	}
     }
-    
-    
     
     /*private void worddle(int x, int y) {
     	
