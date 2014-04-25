@@ -1,8 +1,10 @@
 package tetraword;
 
 import java.awt.Color;
+import java.awt.Font;
 //import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
+import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -40,6 +43,12 @@ public class Board extends JPanel implements ActionListener {
     private JLabel bt_sound;
     private JLabel bt_break;
     private JLabel pause;
+    private JLabel gameover;
+    private JLabel printWord = new JLabel(); 
+    private JLabel printScore;
+    private JLabel printLevel; 
+    private JLabel printLine; 
+    private JLabel labelBonus = new JLabel();
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
@@ -65,7 +74,9 @@ public class Board extends JPanel implements ActionListener {
     int curLine; // ligne sur laquelle l'utilisateur clique
     String inputLetters = ""; // lettres saisies au clic par l'utilisateur
     String bestAnagram = ""; // longueur du meilleur anagramme possible sur la ligne actuelle
-    double difficulty = 0.75; // difficulte des anagrammes
+    int difficulty = 30; // difficulte des anagrammes
+    
+    int speed; // vitesse de chute des pieces
     
     int score;
     int level;
@@ -73,10 +84,14 @@ public class Board extends JPanel implements ActionListener {
     LinkedList<Bonus> bonuses;
 	private Bonus curBonus;
 	private Bonuses[] bonus;
+	private Timer timerBonus;
 
     public Board(GameFrame parent) {
        setFocusable(true);
-       addBackground();
+       // Chargement de l'interface graphique
+       buildInterface();
+       // Adapation de la difficulte en fonction de preferences de l'utilisateur
+       setDifficulty();
        curPiece = new Shape();
        curBonus = new Bonus();
        curLine = -1;
@@ -95,6 +110,7 @@ public class Board extends JPanel implements ActionListener {
        clearBoard();
        
        newBonus();
+       timerBonus = new Timer(2000, this);
     }
     
     // Verifie si la piece a fini de tomber
@@ -121,7 +137,7 @@ public class Board extends JPanel implements ActionListener {
     	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
-    Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
+    //Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
 
     public void start()
     {
@@ -267,7 +283,100 @@ public class Board extends JPanel implements ActionListener {
         });
     }
     
-    public void addBackground(){
+    public void gameOver(){
+    	clearBoard();
+	    picture.setVisible(false);
+
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/gameover.jpg"));         
+   	 	
+    	gameover = new JLabel(new ImageIcon(bgBreak.getImage()));
+    	gameover.setSize(525, 700);
+	    add(gameover);
+	    gameover.setVisible(true);
+	    
+        // Couleur des bouton menu
+        final Color blue = new Color(46,49,146);
+        final Color black = new Color(0,0,0);
+        final Color white = new Color(255,255,255);
+        
+        // Bouton Nouvelle Partie
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
+        gameover.add(bt_start);
+        // On affiche la page du jeu
+        bt_start.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_start.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_start.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                // On ouvre une fenetre avec une nouvelle partie
+                GameFrame game = new GameFrame();
+                game.setLocationRelativeTo(null);
+                game.setVisible(true);
+                //On ferme l'ancienne fenetre
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}
+        	}
+        });
+        
+        //Bouton Menu principal
+        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
+        gameover.add(bt_menu);
+        bt_menu.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_menu.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+                MainMenu menu = new MainMenu();
+                //Ouvrir au meme endroit que le menu
+                menu.setLocationRelativeTo(null);
+                menu.setVisible(true);
+                Window window = SwingUtilities.windowForComponent(gameover);
+            	if (window instanceof JFrame) {
+            		JFrame frame = (JFrame) window;
+            		frame.setVisible(false);
+            		frame.dispose();
+            	}  
+        	}
+        });
+        
+        // Bouton Quitter
+        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
+        gameover.add(bt_exit);
+        // On quitte le jeu
+        bt_exit.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseEntered(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(white, true);
+        	}
+        	@Override
+        	public void mouseExited(MouseEvent e) {
+        		bt_exit.SetForegroundandFill(black, false);
+        	}
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		System.exit(0);
+        	}
+        });
+    	 	
+    }
+    
+    public void buildInterface(){
     	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
@@ -354,6 +463,32 @@ public class Board extends JPanel implements ActionListener {
         		}
         	}
         });
+        
+        
+        Font font = new Font("Arial",Font.BOLD,22);
+        Font font_level = new Font("Arial",Font.BOLD,36);
+        
+        
+        //On affiche le score
+    	printScore = new JLabel(Integer.toString(0));
+    	printScore.setBounds(40,55, 100, 100); 
+    	printScore.setFont(font);
+    	printScore.setForeground(Color.white);
+    	picture.add(printScore);
+    	
+    	//On affiche le level
+        printLevel = new JLabel(Integer.toString(1)); 
+        printLevel.setFont(font_level);
+        printLevel.setForeground(Color.white);
+        printLevel.setBounds(310, 582, 300, 100);  
+    	picture.add(printLevel);
+        
+        //On affiche le nombre de ligne
+        printLine = new JLabel(Integer.toString(0)); 
+        printLine.setFont(font);
+        printLine.setForeground(Color.white);
+        printLine.setBounds(40, 140, 300, 100);  
+    	picture.add(printLine);
     }
     
     // Dessine tous les objets
@@ -399,8 +534,8 @@ public class Board extends JPanel implements ActionListener {
             	int x = curBonus.x();
                 int y = curBonus.y();
                 drawBonus(g, BoardLeft + x * squareWidth(),
-                           BoardTop + (BoardHeight - y - 1) * squareHeight(),
-                           curBonus.getBonus());
+                          BoardTop + (BoardHeight - y - 1) * squareHeight(),
+                          curBonus.getBonus());
             }
     	}
     }
@@ -431,6 +566,7 @@ public class Board extends JPanel implements ActionListener {
             board[i] = Tetrominoes.NoShape;
             bonus[i] = Bonuses.NoBonus;
         }
+        curBonus.setBonus(Bonuses.NoBonus);
     }
 
     private void pieceDropped()
@@ -450,8 +586,8 @@ public class Board extends JPanel implements ActionListener {
             newPiece();
         	score += 5;
             level = score/100 + 1;
-        	//System.out.println("Score : " + score);
-        	//System.out.println("Niveau : " + level);
+            printScore.setText(Integer.toString(score)); 	
+			printLevel.setText(Integer.toString(level));
     }
 
     private void newPiece()
@@ -467,6 +603,7 @@ public class Board extends JPanel implements ActionListener {
             curPiece.setShape(Tetrominoes.NoShape);
             timer.stop();
             isStarted = false;
+            gameOver();
             //statusbar.setText("game over");
         }
     }
@@ -504,34 +641,66 @@ public class Board extends JPanel implements ActionListener {
     	    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
     	        //System.out.println("Bonus : (" + curBonus.x() + ";" + curBonus.y() + ")");
     	        if((curX + curPiece.x(i)) == curBonus.x() && (curY + curPiece.y(i)) == curBonus.y()) {
-    	        	// TODO
     	        	System.out.println("Collision");
+    	        	picture.remove(labelBonus);
     	        	bonuses.add(curBonus);
     	        	curBonus = new Bonus();
     	        }
             }
         	
         	// Verifie la collision entre les pieces en bas et le bonus
-        	/*for (int i = 0; i < BoardHeight; ++i) {
+        	for (int i = 0; i < BoardHeight; ++i) {
                 for (int j = 0; j < BoardWidth; ++j) {
                 	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
-                    if (shape != Tetrominoes.NoShape) {
+                    if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
                     	bonuses.add(curBonus);
                     	curBonus = new Bonus();
                     }
                 }
-            }*/
+            }
         } else {
         	Random r = new Random();
-        	int x = Math.abs(r.nextInt()) % 10 + 1;
+        	int x = Math.abs(r.nextInt()) % 10; // TODO
         	if(x == 1) {
-        		curBonus.setRandomBonus();
+        		newBonus();
         	}
         }
     	        
         repaint();
        
         return true;
+    }
+    
+    private void setDifficulty(){
+       	Properties options = new Properties();     	
+    	// Creation d'une instance de File pour le fichier de config
+    	File fichierConfig = new File("conf/conf.properties"); 
+    	
+    	// Chargement du fichier de configuration
+    	try {
+    		options.load(new FileInputStream(fichierConfig));
+    	} 
+    	catch(IOException e) {
+    		System.out.println("Echec chargement");
+    	}
+    	
+    	// Recuperer une propriete d'un fichier de configurations
+   	 	String configLevel = options.getProperty("Level"); 
+   	 	
+    	switch (configLevel)
+ 	   	{
+ 	   		case "debutant":
+ 	   			difficulty = 30;
+ 	   			break;
+ 	   		case "amateur":
+ 	   			difficulty = 50;
+ 	   			break; 
+ 	   		case "expert":
+ 	   			difficulty = 70;
+ 	   			break; 
+ 	   		default:
+ 	   			difficulty = 30;       
+ 	   	}
     }
     
     private boolean isWordCorrect() {
@@ -581,6 +750,8 @@ public class Board extends JPanel implements ActionListener {
     	if(isWordCorrect() && isLineFull(y)) {
     		++numLinesRemoved;
     		
+    		System.out.println("coucou");
+    		
     		// Augmentation du score
     		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
     		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
@@ -595,11 +766,11 @@ public class Board extends JPanel implements ActionListener {
         			bricks[j][k][0] = idAt(j, k + 1);
         			bricks[j][k][1] = letterAt(j, k + 1);
         			bricks[j][k][2] = clickAt(j, k + 1);
-        			bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
+        			//bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
             	}
             }
     	}
-    	else if(isLineFull(y)) {
+    	else if(!isWordCorrect() && isLineFull(y)) {
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
             		// Les lettres ne sont plus considerees comme deja cliquees
@@ -612,8 +783,32 @@ public class Board extends JPanel implements ActionListener {
         curLine = -1;
     }
     
-    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
-    	Color colors[] = { 
+private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
+    	
+    	/*switch (bonus)
+ 	   	{
+ 	   	  case BonusScore:
+ 	        // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/BonusScore.png"));
+ 	   	    break;
+ 	   	  case Worddle:
+ 	        // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/Worddle.png"));
+ 	   	    break;
+ 	   	  case Speed:
+ 	         // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/Speed.png"));
+ 	   	    break; 
+ 	   	  default:
+ 	         // Ajout d'une image de fond
+ 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/explosion.png"));        
+ 	   	}*/
+    	
+        /*labelBonus.setIcon(curBonus.getImage());	
+        labelBonus.setBounds(x + 1, y + 1, squareWidth() + 2, squareHeight() + 2); 
+        picture.add(labelBonus);*/
+        
+    	/*Color colors[] = { 
     		new Color(0, 0, 0), new Color(102, 51, 51), 
     		new Color(51, 102, 51), new Color(51, 51, 102)
         };
@@ -632,7 +827,13 @@ public class Board extends JPanel implements ActionListener {
         g.drawLine(x + 1, y + squareHeight() - 1,
                          x + squareWidth() - 1, y + squareHeight() - 1);
         g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + 1);
+                         x + squareWidth() - 1, y + 1);*/
+		
+		// TODO 
+		Image image = (curBonus.getImage()).getImage();
+		if(image != null) // Si l'image existe, ...
+		g.drawImage(image, x, y, this); // ... on la dessine
+		else System.out.println("coucou");
     }
     
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
@@ -687,7 +888,10 @@ public class Board extends JPanel implements ActionListener {
     		if(bricks[newX][newY][2] == 0) {
     			inputLetters += Character.toLowerCase(letterAt(newX,newY));
     			bricks[newX][newY][2] = 1;
-    			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    			printWord.setText(inputLetters);
+    	    	printWord.setBounds(300,-25, 300, 100);     	
+    	    	picture.add(printWord);
     		} else {
     			System.err.println("La lettre a deja ete utilisee");
     		}
@@ -697,6 +901,29 @@ public class Board extends JPanel implements ActionListener {
     		bestAnagram = "";
     		System.err.println("La ligne n'est pas pleine");
     	}
+    }
+    
+    private void applyBonus(Bonuses bonusType) {
+    	switch (bonusType) {
+		case NoBonus:
+			break;
+		case Worddle:
+			
+			break;
+		case Speed:
+			speedBonus();
+			break;
+		case BonusScore:
+			//scoreBonus();
+			break;
+		case MalusScore:
+			//scoreBonus();
+			break;
+    	}
+    }
+    
+    private void speedBonus() {
+    	
     }
     
     /*private void worddle(int x, int y) {
@@ -764,8 +991,9 @@ public class Board extends JPanel implements ActionListener {
 	    			oneLineDown();
 	    			break;
 	    		case KeyEvent.VK_ENTER:
-	    			if(curLine != -1)
+	    			if(curLine != -1) {
 	    				removeLine(curLine);
+	    			}
 	    			break;
 	    		/*case 'd':
 					oneLineDown();
