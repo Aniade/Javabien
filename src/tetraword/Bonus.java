@@ -61,7 +61,7 @@ public class Bonus {
     {
         Random r = new Random();
         int x = Math.abs(r.nextInt()) % 10;
-        System.out.println("Random x : " + x);
+        //System.out.println("Random x : " + x);
         setX(x);
     }
     
@@ -69,7 +69,7 @@ public class Bonus {
     {
         Random r = new Random();
         int y = Math.abs(r.nextInt()) % 20;
-        System.out.println("Random y : " + y);
+        //System.out.println("Random y : " + y);
         setY(y);
     }
 }

@@ -5,7 +5,6 @@ import java.awt.Font;
 //import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -19,40 +18,30 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
-import java.util.TimerTask;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import design.MenuButton;
+import design.PrintText;
 import tetraword.Bonus.Bonuses;
 import tetraword.Shape.Tetrominoes;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
 
-    private ImageIcon ii;
-    private ImageIcon btSound;
-    private ImageIcon btMute;
-    private ImageIcon btBreak;
-    private JLabel picture;
-    private JLabel bt_sound;
-    private JLabel bt_break;
-    private JLabel pause;
-    private JLabel gameover;
+	private ImageIcon ii, btSound, btMute, btBreak;
+    private JLabel picture, bt_sound, bt_break, pause, gameover;
     private JLabel printWord = new JLabel(); 
-    private JLabel printScore;
-    private JLabel printLevel; 
-    private JLabel printLine; 
     private JLabel labelBonus = new JLabel();
+    private PrintText printScore, printLevel, printLine;
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
-    final int BoardTop = 59;
+    final int BoardTop = 64;
     final int BoardLeft = 120;
     final int GameWidth = 279;
     final int GameHeight = 560;
@@ -77,7 +66,6 @@ public class Board extends JPanel implements ActionListener {
     int difficulty = 30; // difficulte des anagrammes
     
     int speed; // vitesse de chute des pieces
-    
     int score;
     int level;
     
@@ -86,16 +74,24 @@ public class Board extends JPanel implements ActionListener {
 	private Bonuses[] bonus;
 	private Timer timerBonus;
 
-    public Board(GameFrame parent) {
+	private PlaySound sound;
+
+	public Board(GameFrame parent) throws UnsupportedAudioFileException, IOException {
        setFocusable(true);
        // Chargement de l'interface graphique
        buildInterface();
+       //Musique
+       sound = new PlaySound(new File("src/audio/test.wav"));
+       sound.open();
+       sound.play();
+       
        // Adapation de la difficulte en fonction de preferences de l'utilisateur
        setDifficulty();
        curPiece = new Shape();
        curBonus = new Bonus();
        curLine = -1;
-       timer = new Timer(800, this); // vitesse de descente des pieces
+       speed = 800;
+       timer = new Timer(speed, this); // vitesse de descente des pieces
        timer.start();
 
        /*statusbar =  parent.getStatusBar();*/
@@ -175,31 +171,30 @@ public class Board extends JPanel implements ActionListener {
     
 	//Menu pause
     public void breakMenu(){
-    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/bg_accueil.jpg"));         
-	   	 	
+    	sound.stop();
+    	sound.close();
+    	
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/bg_accueil.jpg"));            	 	
 	    pause = new JLabel(new ImageIcon(bgBreak.getImage()));
 	    pause.setSize(525, 700);
 	    add(pause);
 	    pause.setVisible(true);  
 	    picture.setVisible(false);
 	    
-        /*Couleur des bouton menu*/
         final Color blue =new Color(46,49,146);
-        final Color black =new Color(0,0,0);
-        final Color white =new Color(255,255,255);
         
         //Bouton Continuer
-        final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, black, 200, false);
+        final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, Color.black, 200, false);
         pause.add(bt_continue);
         /*On affiche la page du jeu*/
         bt_continue.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseEntered(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(white, true);
+        		bt_continue.SetForegroundandFill(Color.white, true);
         	}
         	@Override
         	public void mouseExited(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(black, false);
+        		bt_continue.SetForegroundandFill(Color.black, false);
         	}
         	@Override
         	public void mouseClicked(MouseEvent e) {
@@ -207,172 +202,26 @@ public class Board extends JPanel implements ActionListener {
         	}
         });
         
-        //Bouton Nouvelle Partie
-        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
-        pause.add(bt_start);
-        /*On affiche la page du jeu*/
-        bt_start.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_start.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_start.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                //On ouvre une fenetre avec une nouvelle partie
-                GameFrame game = new GameFrame();
-                game.setLocationRelativeTo(null);
-                game.setVisible(true);
-                //On ferme l'ancienne fenetre
-                Window window = SwingUtilities.windowForComponent(pause);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}
-        	}
-        });
-        
-        //Bouton Menu principal
-        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
-        pause.add(bt_menu);
-        bt_menu.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                MainMenu menu = new MainMenu();
-                //Ouvrir au même endroit que le menu
-                menu.setLocationRelativeTo(null);
-                menu.setVisible(true);
-                Window window = SwingUtilities.windowForComponent(pause);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}  
-        	}
-        });
-        
-        // Bouton Quitter
-        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
-        pause.add(bt_exit);
-        // On quitte le jeu
-        bt_exit.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		System.exit(0);
-        	}
-        });
+        MenuButton.buttonNewGame(pause, 280);
+        MenuButton.buttonMenu(pause,360);        
+        MenuButton.buttonClose(pause, 440);
     }
     
+    //Menu game Over
     public void gameOver(){
     	clearBoard();
 	    picture.setVisible(false);
 
-    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("pictures/gameover.jpg"));         
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/gameover.jpg"));         
    	 	
     	gameover = new JLabel(new ImageIcon(bgBreak.getImage()));
     	gameover.setSize(525, 700);
 	    add(gameover);
 	    gameover.setVisible(true);
-	    
-        // Couleur des bouton menu
-        final Color blue = new Color(46,49,146);
-        final Color black = new Color(0,0,0);
-        final Color white = new Color(255,255,255);
         
-        // Bouton Nouvelle Partie
-        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 280, false);
-        gameover.add(bt_start);
-        // On affiche la page du jeu
-        bt_start.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_start.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_start.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                // On ouvre une fenetre avec une nouvelle partie
-                GameFrame game = new GameFrame();
-                game.setLocationRelativeTo(null);
-                game.setVisible(true);
-                //On ferme l'ancienne fenetre
-                Window window = SwingUtilities.windowForComponent(gameover);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}
-        	}
-        });
-        
-        //Bouton Menu principal
-        final MenuButton bt_menu = new MenuButton("Menu principal", blue, black, 360, false);
-        gameover.add(bt_menu);
-        bt_menu.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_menu.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-                MainMenu menu = new MainMenu();
-                //Ouvrir au meme endroit que le menu
-                menu.setLocationRelativeTo(null);
-                menu.setVisible(true);
-                Window window = SwingUtilities.windowForComponent(gameover);
-            	if (window instanceof JFrame) {
-            		JFrame frame = (JFrame) window;
-            		frame.setVisible(false);
-            		frame.dispose();
-            	}  
-        	}
-        });
-        
-        // Bouton Quitter
-        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 440, false);
-        gameover.add(bt_exit);
-        // On quitte le jeu
-        bt_exit.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(black, false);
-        	}
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		System.exit(0);
-        	}
-        });
+        MenuButton.buttonNewGame(gameover, 280);
+        MenuButton.buttonMenu(gameover,360);        
+        MenuButton.buttonClose(gameover, 440);
     	 	
     }
     
@@ -388,43 +237,41 @@ public class Board extends JPanel implements ActionListener {
     	catch(IOException e) {
     		System.out.println("Echec chargement");
     	}
-    	
-    	// Recuperer une propriete d'un fichier de configurations
+
    	 	String configUniv = options.getProperty("Univers"); 
-   	 	
     	switch (configUniv)
  	   	{
  	   	  case "western":
  	        // Ajout d'une image de fond
- 	        ii = new ImageIcon(this.getClass().getResource("pictures/cowboys.jpg"));
- 	        btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
- 	        btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
- 	        btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
+ 	        ii = new ImageIcon(this.getClass().getResource("/pictures/cowboys.jpg"));
+ 	        btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
+ 	        btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
+ 	        btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
  	   	    break;
  	   	  case "kungfu":
  	        // Ajout d'une image de fond
- 	        ii = new ImageIcon(this.getClass().getResource("pictures/ninjas.jpg"));
- 	        btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
- 	        btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
- 	        btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
+ 	        ii = new ImageIcon(this.getClass().getResource("/pictures/ninjas.jpg"));
+ 	        btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
+ 	        btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
+ 	        btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
  	   	    break; 
  	   	  case "pirate":
  	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));
-	 	     btSound = new ImageIcon(this.getClass().getResource("pictures/sound_ninja.png"));
- 	         btMute = new ImageIcon(this.getClass().getResource("pictures/mute_ninja.png"));
- 	         btBreak = new ImageIcon(this.getClass().getResource("pictures/break_ninja.png"));
+ 	         ii = new ImageIcon(this.getClass().getResource("/pictures/pirates.jpg"));
+	 	     btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
+ 	         btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
+ 	         btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
  	   	    break; 
  	   	  case "batman":
  	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("pictures/batman.jpg"));
-	 	     btSound = new ImageIcon(this.getClass().getResource("pictures/sound_batman.png"));
-	 	     btMute = new ImageIcon(this.getClass().getResource("pictures/mute_batman.png"));
-	 	     btBreak = new ImageIcon(this.getClass().getResource("pictures/break_batman.png"));  
+ 	         ii = new ImageIcon(this.getClass().getResource("/pictures/batman.jpg"));
+	 	     btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_batman.png"));
+	 	     btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_batman.png"));
+	 	     btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_batman.png"));  
  	   	    break; 
  	   	  default:
  	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("pictures/pirates.jpg"));         
+ 	         ii = new ImageIcon(this.getClass().getResource("/pictures/pirates.jpg"));         
  	   	}
    	 	
         picture = new JLabel(new ImageIcon(ii.getImage()));
@@ -452,8 +299,10 @@ public class Board extends JPanel implements ActionListener {
         	@Override
         	public void mouseClicked(MouseEvent e) {
         		if(isSound){
+	   	             sound.stop();
+	   	             sound.close();
 	        		bt_sound.setIcon(btMute);
-	        		System.out.println("Et je coupe le son (mais en fé il n'en a pas :o)");
+	        		System.out.println("Et je coupe le son");
 	        		isSound = false;
         		}
         		else{
@@ -468,30 +317,16 @@ public class Board extends JPanel implements ActionListener {
         Font font = new Font("Arial",Font.BOLD,22);
         Font font_level = new Font("Arial",Font.BOLD,36);
         
-        
         //On affiche le score
-    	printScore = new JLabel(Integer.toString(0));
-    	printScore.setBounds(40,55, 100, 100); 
-    	printScore.setFont(font);
-    	printScore.setForeground(Color.white);
-    	picture.add(printScore);
-    	
-    	//On affiche le level
-        printLevel = new JLabel(Integer.toString(1)); 
-        printLevel.setFont(font_level);
-        printLevel.setForeground(Color.white);
-        printLevel.setBounds(310, 582, 300, 100);  
-    	picture.add(printLevel);
-        
+        printScore = new PrintText(Integer.toString(0), 40, 55, font, Color.white, picture);
+        //On affiche le level
+        printLevel = new PrintText(Integer.toString(1), 310, 582, font_level, Color.white, picture);        
         //On affiche le nombre de ligne
-        printLine = new JLabel(Integer.toString(0)); 
-        printLine.setFont(font);
-        printLine.setForeground(Color.white);
-        printLine.setBounds(40, 140, 300, 100);  
-    	picture.add(printLine);
+        printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.white, picture);    
     }
     
     // Dessine tous les objets
+    @Override
     public void paint(Graphics g)
     {   
     	// TODO
@@ -500,6 +335,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Creation d'un bonus");
     		//newBonus();
     	}*/
+    	
     	
     	super.paint(g);
 
@@ -538,6 +374,19 @@ public class Board extends JPanel implements ActionListener {
                           curBonus.getBonus());
             }
     	}
+    	
+    	
+    	/*Gestion Musique*/
+        /*if(ThreadPlaySound.endMusic && !isPaused && isSound){
+      	  try {
+			sound = new PlaySound(new File("/audio/test.wav"));
+		} catch (UnsupportedAudioFileException | IOException e) {
+			e.printStackTrace();
+		}
+      	  sound.open();
+      	  sound.play();
+      	  ThreadPlaySound.endMusic = false;
+        }*/
     }
 
     private void dropDown()
@@ -581,7 +430,7 @@ public class Board extends JPanel implements ActionListener {
             bricks[x][y][2] = curPiece.getClick(i);
             bonus[(y * BoardWidth) + x] = curBonus.getBonus();
         }
-
+        
         if (!isFallingFinished)
             newPiece();
         	score += 5;
@@ -617,7 +466,7 @@ public class Board extends JPanel implements ActionListener {
     		curBonus.setRandomX();
         	curBonus.setRandomY();
     	}
-    	System.out.println("Bonus (" + curBonus.x() + "," + curBonus.y() + ")");
+    	//System.out.println("Bonus (" + curBonus.x() + "," + curBonus.y() + ")");
     }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
@@ -641,9 +490,10 @@ public class Board extends JPanel implements ActionListener {
     	    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
     	        //System.out.println("Bonus : (" + curBonus.x() + ";" + curBonus.y() + ")");
     	        if((curX + curPiece.x(i)) == curBonus.x() && (curY + curPiece.y(i)) == curBonus.y()) {
-    	        	System.out.println("Collision");
+    	        	System.out.println(curBonus.getBonus());
     	        	picture.remove(labelBonus);
-    	        	bonuses.add(curBonus);
+    	        	applyBonus(curBonus.getBonus());
+    	        	//bonuses.add(curBonus);
     	        	curBonus = new Bonus();
     	        }
             }
@@ -720,7 +570,7 @@ public class Board extends JPanel implements ActionListener {
 		 // Verifie si le mot n'est pas vide
 		 if(inputLetters != "" || inputLetters != null || inputLetters.length() != 0) {
 			 // Verifie si le mot respecte la difficulte
-			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()) {
+			 if(inputLetters.length() >= (int)difficulty * bestAnagram.length()/100) {
 				 //Verifier si le mot est dans le dictionnaire
 				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(inputLetters);
@@ -748,8 +598,8 @@ public class Board extends JPanel implements ActionListener {
     
     private void removeLine(int y) {
     	if(isWordCorrect() && isLineFull(y)) {
-    		++numLinesRemoved;
-    		
+    		++numLinesRemoved;	
+    		printLine.setText(Integer.toString(numLinesRemoved)); 
     		System.out.println("coucou");
     		
     		// Augmentation du score
@@ -783,52 +633,7 @@ public class Board extends JPanel implements ActionListener {
         curLine = -1;
     }
     
-private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
-    	
-    	/*switch (bonus)
- 	   	{
- 	   	  case BonusScore:
- 	        // Ajout d'une image de fond
- 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/BonusScore.png"));
- 	   	    break;
- 	   	  case Worddle:
- 	        // Ajout d'une image de fond
- 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/Worddle.png"));
- 	   	    break;
- 	   	  case Speed:
- 	         // Ajout d'une image de fond
- 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/Speed.png"));
- 	   	    break; 
- 	   	  default:
- 	         // Ajout d'une image de fond
- 	   		bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/explosion.png"));        
- 	   	}*/
-    	
-        /*labelBonus.setIcon(curBonus.getImage());	
-        labelBonus.setBounds(x + 1, y + 1, squareWidth() + 2, squareHeight() + 2); 
-        picture.add(labelBonus);*/
-        
-    	/*Color colors[] = { 
-    		new Color(0, 0, 0), new Color(102, 51, 51), 
-    		new Color(51, 102, 51), new Color(51, 51, 102)
-        };
-
-
-        Color color = colors[bonus.ordinal()];
-
-        g.setColor(color);
-        g.fillRect(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2);
-
-        g.setColor(color.brighter());
-        g.drawLine(x, y + squareHeight() - 1, x, y);
-        g.drawLine(x, y, x + squareWidth() - 1, y);
-
-        g.setColor(color.darker());
-        g.drawLine(x + 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + squareHeight() - 1);
-        g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + 1);*/
-		
+    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
 		// TODO 
 		Image image = (curBonus.getImage()).getImage();
 		if(image != null) // Si l'image existe, ...
@@ -838,7 +643,9 @@ private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
     
     private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
     {
-        Color colors[] = { new Color(0, 0, 0), new Color(204, 102, 102), 
+        //System.out.println("draw square");
+    	
+    	Color colors[] = { new Color(0, 0, 0), new Color(204, 102, 102), 
             new Color(102, 204, 102), new Color(102, 102, 204), 
             new Color(204, 204, 102), new Color(204, 102, 204), 
             new Color(102, 204, 204), new Color(218, 170, 0)
@@ -846,24 +653,31 @@ private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
 
 
         Color color = colors[shape.ordinal()];
+        //Font f = new Font("visitor", Font.PLAIN, 10);  // make a new font object
+        Font font = new Font("Sans-Serif", Font.PLAIN, 14);
+
+        Color black = new Color(0, 0, 0);
 
         g.setColor(color);
-        g.fillRect(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2);
+        g.fillRect(x + 1, y + 1, squareWidth() - 1, squareHeight() - 1);
+        g.fillRect(x + 8, y - 5, (squareWidth() / 2) - 1, squareHeight() / 2);
 
-        g.setColor(color.brighter());
+        /*g.setColor(black);
         g.drawLine(x, y + squareHeight() - 1, x, y);
         g.drawLine(x, y, x + squareWidth() - 1, y);
 
-        g.setColor(color.darker());
+        g.setColor(black);
         g.drawLine(x + 1, y + squareHeight() - 1,
                          x + squareWidth() - 1, y + squareHeight() - 1);
         g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + 1);
+                         x + squareWidth() - 1, y + 1);*/
         
         // Ecriture de la lettre
         /*String s = Character.toString(letter);*/
-	    g.setColor(color.darker());    
-		g.drawString(letter, x + 10, y + 18);
+	    g.setColor(color.darker());
+	    //g.setFont(font);
+	    //g.setFont(f); // set the objects font using setFont();
+		g.drawString(letter, x + 11, y + 19);
 
     }
     
@@ -914,7 +728,7 @@ private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
 			speedBonus();
 			break;
 		case BonusScore:
-			//scoreBonus();
+			scoreBonus();
 			break;
 		case MalusScore:
 			//scoreBonus();
@@ -922,7 +736,16 @@ private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
     	}
     }
     
-    private void speedBonus() {
+    private void scoreBonus() {
+    	Random r = new Random();
+        int x = (Math.abs(r.nextInt()) % 5 + 1) * 10;
+        System.out.println("Bonus de score +" + x + " points");
+		score += x;
+        printScore.setText(Integer.toString(score)); 	
+		printLevel.setText(Integer.toString(level));
+	}
+
+	private void speedBonus() {
     	
     }
     

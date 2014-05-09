@@ -1,5 +1,8 @@
 package tetraword;
 
+import java.io.IOException;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
@@ -8,7 +11,7 @@ public class GameFrame extends JFrame {
 
     JLabel statusbar;
 
-    public GameFrame() {
+    public GameFrame() throws UnsupportedAudioFileException, IOException {
         /*statusbar = new JLabel(" 0");
         add(statusbar, BorderLayout.SOUTH);*/
         Board board = new Board(this);

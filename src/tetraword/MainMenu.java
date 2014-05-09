@@ -3,7 +3,9 @@ package tetraword;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,11 +49,17 @@ public class MainMenu extends JFrame {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 System.out.println("New Game - button is working");
-                GameFrame game = new GameFrame();
+                GameFrame game = null;
+				try {
+					game = new GameFrame();
+				} catch (UnsupportedAudioFileException | IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
                 //Ouvrir au même endroit que le menu
                 game.setLocationRelativeTo(null);
                 game.setVisible(true);
-                dispose();  
+                dispose(); 
         	}
         });
         
