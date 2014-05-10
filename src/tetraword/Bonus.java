@@ -2,7 +2,6 @@ package tetraword;
 
 import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 
@@ -51,7 +50,7 @@ public class Bonus {
     public void setRandomBonus()
     {
         Random r = new Random();
-        int x = Math.abs(r.nextInt()) % 3 + 1;
+        int x = Math.abs(r.nextInt()) % 4 + 1;
         Bonuses[] values = Bonuses.values(); 
         setBonus(values[x]);
         setImage(values[x].toString());
