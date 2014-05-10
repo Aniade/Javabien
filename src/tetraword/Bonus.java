@@ -37,8 +37,8 @@ public class Bonus {
     private void setX(int x) { bonusCoords[0] = x; }
     private void setY(int y) { bonusCoords[1] = y; }
     public void setBonus(Bonuses bonus) { bonusType = bonus; }
-    public void setImage() { bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/" + (bonusType.toString()) + ".png")); }
-    public void setImage(String filename) { bonusImg = new ImageIcon(this.getClass().getResource("pictures/bonus/" + filename + ".png")); }
+    public void setImage() { bonusImg = new ImageIcon(this.getClass().getResource("/pictures/bonus/" + (bonusType.toString()) + ".png")); }
+    public void setImage(String filename) { bonusImg = new ImageIcon(this.getClass().getResource("/pictures/bonus/" + filename + ".png")); }
 
     // GETTER
     public int x() { return bonusCoords[0]; }
