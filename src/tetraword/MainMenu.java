@@ -142,7 +142,7 @@ public class MainMenu extends JFrame {
         });
         
      	//Add background       
-        ii = new ImageIcon(this.getClass().getResource("pictures/bg_accueil.jpg"));
+        ii = new ImageIcon(this.getClass().getResource("/pictures/bg_accueil.jpg"));
         picture = new JLabel(new ImageIcon(ii.getImage()));
         add(picture);   
         
