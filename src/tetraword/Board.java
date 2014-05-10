@@ -566,7 +566,7 @@ public class Board extends JPanel implements ActionListener {
 		 bestAnagram = dictionary.bestAnagram(tabInlineLetters,inlineLetters.length());
     
 		 // Verifie si le mot n'est pas vide
-		 if(word != "" || word != null) {
+		 if(word != null && !word.isEmpty()) {
 			 // Verifie si le mot respecte la difficulte
 			 if(word.length() >= (int)difficulty * bestAnagram.length()/100) {
 				 //Verifier si le mot est dans le dictionnaire
@@ -586,28 +586,31 @@ public class Board extends JPanel implements ActionListener {
 	    //On adapte inputLetters aux methodes de dictionary
 	    word = word.toLowerCase();
     
-		 // Verifie si le mot n'est pas vide
-		 if(word != "" || word != null) {
-		 	 // Verifier si le mot est dans le dictionnaire
-			 validWord = dictionary.validateWord(word);
-			 if(validWord) {
-				 for(int i = 0; i < BoardWidth; ++i) {
-					 for(int j = 0; j < BoardHeight; ++j) {
-						if(curWorddle[i][j][1] == 1) {
-							bricks[i][j][2] = 1;
-						}
-					}
-				 }
-				 System.out.println("Le mot est correct");
-			 } else {
-				 System.out.println("Le mot est incorrect");
-			 }
-		 }
+	    // Verifie si le mot n'est pas vide
+	    if(word != null && !word.isEmpty()) {
+	    	//if(word != "" || word != null) {
+	    	System.out.println("Le mot n'est pas null");
+	    	System.out.println(word);
+	    	// Verifier si le mot est dans le dictionnaire
+	    	validWord = dictionary.validateWord(word);
+	    	if(validWord) {
+	    		for(int i = 0; i < BoardWidth; ++i) {
+	    			for(int j = 0; j < BoardHeight; ++j) {
+	    				if(curWorddle[i][j][1] == 1) {
+	    					bricks[i][j][2] = 1;
+	    				}
+	    			}
+	    		}
+	    		System.out.println("Le mot est correct");
+	    	} else {
+	    		System.out.println("Le mot est incorrect");
+	    	}
+		}
 		 
-		 clearCurWorddle();
-		 inputLetters = "";
+		clearCurWorddle();
+		inputLetters = "";
 		 
-		 return validWord;
+		return validWord;
     }
     
     private boolean isLineFull(int y) {
@@ -820,6 +823,7 @@ public class Board extends JPanel implements ActionListener {
 				}
 			} else {
 				// Nouveau mot
+				System.out.println("Nouveau mot");
 				inputLetters = "";
 				clearCurWorddle();
 				inputLetters += Character.toLowerCase(letterAt(newX,newY));
