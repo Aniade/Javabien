@@ -72,10 +72,11 @@ public class Board extends JPanel implements ActionListener {
     //LinkedList<Bonus> bonuses;
 	private Bonus curBonus; // Bonus affiche
 	private Bonuses[] bonus;
+	private Timer timerWorddle;
 	private boolean worddle;
 	private int[] previousCoords;
 	int[][][] curWorddle; //(0,0) = x, (1,0) = y, (2,0) = id, lettre, validation
-	LinkedList<Integer> worddleIds;
+	//LinkedList<Integer> worddleIds;
 	//private Timer timerBonus;
 
 	private PlaySound sound;
@@ -104,6 +105,15 @@ public class Board extends JPanel implements ActionListener {
        previousCoords = new int[2];
        score = 0;
        level = 1;
+       timerWorddle = new Timer(100, new ActionListener() {
+    	   @Override
+    	   public void actionPerformed(ActionEvent ae) {
+				//System.out.println("timerWorddle");
+				//scoreWorddle(inputLetters);
+				//removeBricksWorddle();
+				worddle = false;
+    	   }
+       });
        worddle = false;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
@@ -591,8 +601,8 @@ public class Board extends JPanel implements ActionListener {
 				 //Verifier si le mot est dans le dictionnaire
 				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(word);
-				 if(validWord) System.out.println("Le mot est correct");
-				 if(!validWord) System.out.println("Le mot est incorrect");
+				 if(validWord) System.out.println("L'anagramme est correct");
+				 if(!validWord) System.out.println("L'anagramme est incorrect");
 			 }
 		 }
 		 return validWord;
@@ -607,7 +617,6 @@ public class Board extends JPanel implements ActionListener {
     
 	    // Verifie si le mot n'est pas vide
 	    if(word != null && !word.isEmpty()) {
-	    	//if(word != "" || word != null) {
 	    	System.out.println("Le mot n'est pas null");
 	    	System.out.println(word);
 	    	// Verifier si le mot est dans le dictionnaire
@@ -648,9 +657,11 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void removeLine(int y) {
-    	if(validateWordAnagram(inputLetters) && isLineFull(y)) {
-    		++numLinesRemoved;	
-    		printLine.setText(Integer.toString(numLinesRemoved)); 
+    	boolean valid = validateWordAnagram(inputLetters);
+    	if(valid && isLineFull(y)) {
+    		++numLinesRemoved;
+    		printLine.setText(Integer.toString(numLinesRemoved));
+			scoreAnagram(inputLetters);
         	// Parcourir toutes les pieces
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
@@ -663,7 +674,7 @@ public class Board extends JPanel implements ActionListener {
             	}
             }
     	}
-    	else if(!validateWordAnagram(inputLetters) && isLineFull(y)) {
+    	else if(!valid && isLineFull(y)) {
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
             		// Les lettres ne sont plus considerees comme deja cliquees
@@ -789,25 +800,25 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void scoreAnagram(String word) {
-        printScore.setText(Integer.toString(score)); 	
-		printLevel.setText(Integer.toString(level));
-		
-		// Augmentation du score
-		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-		updateScore((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
+    	/*boolean valid = validateWordAnagram(inputLetters);
+    	if(valid)*/
+    	if(word != null && !word.isEmpty()) {
+			// Augmentation du score
+			System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+			System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
+			updateScore((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
+    	}
     }
     
     private void scoreWorddle(String word) {
-        printScore.setText(Integer.toString(score)); 	
-		printLevel.setText(Integer.toString(level));
-		
-		// Augmentation du score
-		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-		// TODO updateScore(int ?);
+    	if(word != null && !word.isEmpty()) {
+			// Augmentation du score
+			System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+			System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
+			// TODO updateScore(int ?);
+    	}
     }
     
     private void applyBonus(Bonuses bonusType) {
@@ -817,6 +828,13 @@ public class Board extends JPanel implements ActionListener {
 		case Worddle:
 			inputLetters = "";
 			worddle = true;
+			if(worddle) {
+				System.out.println("timerWorddle.start()");
+				timerWorddle.start();
+			} else {
+				System.out.println("timerWorddle.stop()");
+				timerWorddle.stop();
+			}
 			break;
 		case Speed:
 			speedBonus();
@@ -996,7 +1014,6 @@ public class Board extends JPanel implements ActionListener {
 	    				validateWordWorddle(inputLetters);
 	    			} else if(curLine != -1) {
 	    				System.out.println("Entrée en mode Anagramme");
-	    				scoreAnagram(inputLetters);
 	    				removeLine(curLine);
 	    			}
 	    			break;
