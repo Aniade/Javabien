@@ -98,14 +98,13 @@ public class Board extends JPanel implements ActionListener {
        timer = new Timer(speed, this); // vitesse de descente des pieces
        timer.start();
 
-       /*statusbar =  parent.getStatusBar();*/
        board = new Tetrominoes[BoardWidth * BoardHeight];
        bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
        bonus = new Bonuses[BoardWidth * BoardHeight];
        previousCoords = new int[2];
        score = 0;
        level = 1;
-       worddle = true;
+       worddle = false;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
        //bonuses = new LinkedList<Bonus>();
@@ -394,8 +393,8 @@ public class Board extends JPanel implements ActionListener {
                 break;
             --newY;
         }
-        score += 5;
-        level = score/100 + 1;
+        updateScore(5);
+
         pieceDropped();
     }
 
@@ -430,10 +429,7 @@ public class Board extends JPanel implements ActionListener {
         
         if (!isFallingFinished) {
         	newPiece();
-        	score += 5;
-            level = score/100 + 1;
-            printScore.setText(Integer.toString(score)); 	
-			printLevel.setText(Integer.toString(level));
+        	updateScore(5);
         }
     }
 
@@ -466,10 +462,32 @@ public class Board extends JPanel implements ActionListener {
     	}
     	//System.out.println("Bonus (" + curBonus.x() + "," + curBonus.y() + ")");
     }
+    
+    private void updateScore(int points) {
+    	score += points;
+    	if(level != score/100 + 1) {
+    		updateSpeed(speed - 60);
+    	}
+        level = score/100 + 1;
+        if(score >= 1000) {
+        	System.out.println("FELICITATIONS ! Vous avez gagné un voyage sur Mars !");
+        }
+        printScore.setText(Integer.toString(score)); 	
+		printLevel.setText(Integer.toString(level));
+    }
+    
+    private void updateSpeed(int newSpeed) {
+    	speed = newSpeed;
+    	System.out.println("vitesse : " + speed);
+        timer.setDelay(speed);
+    }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
     {
-        for (int i = 0; i < 4; ++i) {
+        // TODO 
+    	//System.out.println("worddle : " + worddle);
+    	
+    	for (int i = 0; i < 4; ++i) {
             int x = newX + newPiece.x(i);
             int y = newY - newPiece.y(i);
             if (x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight)
@@ -501,14 +519,15 @@ public class Board extends JPanel implements ActionListener {
                 for (int j = 0; j < BoardWidth; ++j) {
                 	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
                     if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
-                    	// TODO bonuses.add(curBonus);
+                    	// TODO si LinkedList de bonus
+                    	// bonuses.add(curBonus);
                     	curBonus = new Bonus();
                     }
                 }
             }
         } else {
         	Random r = new Random();
-        	int x = Math.abs(r.nextInt()) % 10; // TODO
+        	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
         	if(x == 1) {
         		newBonus();
         	}
@@ -764,7 +783,6 @@ public class Board extends JPanel implements ActionListener {
     		}
     	}
     	else {
-    		// TODO Ecrire un message pour dire que la ligne n'est pas pleine
     		bestAnagram = "";
     		System.err.println("La ligne n'est pas pleine");
     	}
@@ -778,8 +796,7 @@ public class Board extends JPanel implements ActionListener {
 		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
 		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
 		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
-        level = score/100 + 1;
+		updateScore((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
     }
     
     private void scoreWorddle(String word) {
@@ -790,8 +807,7 @@ public class Board extends JPanel implements ActionListener {
 		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
 		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
 		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
-        level = score/100 + 1;
+		// TODO updateScore(int ?);
     }
     
     private void applyBonus(Bonuses bonusType) {
@@ -858,36 +874,6 @@ public class Board extends JPanel implements ActionListener {
 			previousCoords[1] = newY;
 			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
     	}
-    	
-    	
-    	
-    	
-    	// Verifie si la ligne est pleine
-    	/*if(isLineFull(newY)) {
-    		// Verifie si l'utilisateur fait un anagramme sur une nouvelle ligne
-    		if(curLine != newY) {
-    			System.out.println("Saisie sur une nouvelle ligne");
-    			inputLetters = "";
-    		}
-    		curLine = newY;
-
-    		// On verifie que l'utilisateur clique sur la piece pour la premiere fois
-    		if(bricks[newX][newY][2] == 0) {
-    			inputLetters += Character.toLowerCase(letterAt(newX,newY));
-    			bricks[newX][newY][2] = 1;
-    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
-    			printWord.setText(inputLetters);
-    	    	printWord.setBounds(300,-25, 300, 100);     	
-    	    	picture.add(printWord);
-    		} else {
-    			System.err.println("La lettre a deja ete utilisee");
-    		}
-    	}
-    	else {
-    		// TODO Ecrire un message pour dire que la ligne n'est pas pleine
-    		bestAnagram = "";
-    		System.err.println("La ligne n'est pas pleine");
-    	}*/
 	}
 	
 	private void clearCurWorddle() {
@@ -908,6 +894,8 @@ public class Board extends JPanel implements ActionListener {
         else {
         	System.out.println("-" + x + " points");
     		score -= x;
+    		if(score < 0)
+    			score = 0;
         }
         printScore.setText(Integer.toString(score)); 	
 		printLevel.setText(Integer.toString(level));
@@ -963,6 +951,21 @@ public class Board extends JPanel implements ActionListener {
     			scoreWorddle(inputLetters);
 				removeBricksWorddle();
 				worddle = false;
+    		}
+    		
+    		if (keycode == 'c' || keycode == 'C') {
+    			updateScore(900);
+    			updateSpeed(200);
+    		}
+    		
+    		if (keycode == 'w' || keycode == 'W') {
+    			worddle = true;
+    			/*Timer timerBonus = new Timer(100, new ActionListener() {
+    			    @Override
+    			    public void actionPerformed(ActionEvent e) {
+    			        worddle = false;
+    			    }
+    			});*/
     		}
     		
     		if (isPaused)
