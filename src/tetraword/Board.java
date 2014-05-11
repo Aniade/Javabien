@@ -39,7 +39,6 @@ public class Board extends JPanel implements ActionListener {
     private JLabel labelBonus = new JLabel();
     private PrintText printScore, printLevel, printLine;
     private String configUniv;
-    private PlaySound soundGameOver;
     
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
@@ -78,13 +77,16 @@ public class Board extends JPanel implements ActionListener {
 	private Timer timerBonus;
 	
 	private PlaySound sound;
+	private PlaySound soundRight = new PlaySound("right");
+	private PlaySound soundWrong = new PlaySound("wrong");
 
     public Board(GameFrame parent) throws UnsupportedAudioFileException, IOException {
        setFocusable(true);
        // Chargement de l'interface graphique
        buildInterface();
        //Musique
-       ThreadPlaySound.endMusic = true;
+       sound = new PlaySound(configUniv);
+       sound.loop();
        
        // Adapation de la difficulte en fonction de preferences de l'utilisateur
        setDifficulty();
@@ -162,6 +164,7 @@ public class Board extends JPanel implements ActionListener {
             //statusbar.setText("paused");
         } else {
             timer.start();
+            sound.loop();
             pause.setVisible(false);
             picture.setVisible(true);
             //statusbar.setText(String.valueOf(numLinesRemoved));
@@ -172,7 +175,6 @@ public class Board extends JPanel implements ActionListener {
 	//Menu pause
     public void breakMenu(){
     	sound.stop();
-    	sound.close();
     	
     	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/bg_accueil.jpg"));            	 	
 	    pause = new JLabel(new ImageIcon(bgBreak.getImage()));
@@ -213,14 +215,7 @@ public class Board extends JPanel implements ActionListener {
     	clearBoard();
     	sound.stop();
     	
-        PlaySound soundGameOver = null;
-		try {
-			soundGameOver = new PlaySound(new File("src/audio/gameover.wav"));
-		} catch (UnsupportedAudioFileException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		soundGameOver.open();
+    	PlaySound soundGameOver = new PlaySound("gameover");
 		soundGameOver.play();
 
     	 
@@ -288,12 +283,12 @@ public class Board extends JPanel implements ActionListener {
         	public void mouseClicked(MouseEvent e) {
         		if(isSound){
 	   	            sound.stop();
-	   	            sound.close();
 	        		bt_sound.setIcon(btMute);
 	        		System.out.println("Et je coupe le son");
 	        		isSound = false;
         		}
         		else{
+        			sound.loop();
         			bt_sound.setIcon(btSound);
 	        		System.out.println("Et je remets le son");
 	        		isSound = true;
@@ -362,20 +357,6 @@ public class Board extends JPanel implements ActionListener {
     	}
     }
     
-	public void soundManager(){
-		/*Gestion Musique*/
-	    if(ThreadPlaySound.endMusic && !isPaused && isSound){
-	  	  try {
-			sound = new PlaySound(new File("src/audio/"+configUniv+".wav"));
-		} catch (UnsupportedAudioFileException | IOException e) {
-			e.printStackTrace();
-		}
-	  	  sound.open();
-	  	  sound.play();
-	  	  System.out.println("ouIIIIIIIIIIIIIIIII");
-	  	  ThreadPlaySound.endMusic = false;
-	    }
-	}
 
     private void dropDown()
     {
@@ -503,9 +484,7 @@ public class Board extends JPanel implements ActionListener {
         	}
         }
     	        
-        repaint();
-        soundManager();
-       
+        repaint();      
         return true;
     }
     
@@ -564,6 +543,7 @@ public class Board extends JPanel implements ActionListener {
 				 validWord = dictionary.validateWord(inputLetters);
 				 if(validWord) System.out.println("Le mot est correct");
 				 if(!validWord) System.out.println("Le mot est incorrect");
+				 
 			 }
 		 }
 		 return validWord;
@@ -586,11 +566,11 @@ public class Board extends JPanel implements ActionListener {
     
     private void removeLine(int y) {
     	if(isWordCorrect() && isLineFull(y)) {
+    		soundRight.play();
     		++numLinesRemoved;	
     		printLine.setText(Integer.toString(numLinesRemoved)); 
     		System.out.println("coucou");
-    		
-    		  	  
+    		    		  	  
     		// Augmentation du score
     		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
     		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
@@ -610,6 +590,7 @@ public class Board extends JPanel implements ActionListener {
             }
     	}
     	else if(!isWordCorrect() && isLineFull(y)) {
+    		soundWrong.play();
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
             		// Les lettres ne sont plus considerees comme deja cliquees
