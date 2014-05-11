@@ -73,7 +73,9 @@ public class Board extends JPanel implements ActionListener {
 	private Bonus curBonus; // Bonus affiche
 	private Bonuses[] bonus;
 	private Timer timerWorddle;
-	private boolean worddle;
+	private int durationWorddle;
+	private Timer timerSpeed;
+	private boolean isWorddle;
 	private int[] previousCoords;
 	int[][][] curWorddle; //(0,0) = x, (1,0) = y, (2,0) = id, lettre, validation
 	//LinkedList<Integer> worddleIds;
@@ -105,16 +107,30 @@ public class Board extends JPanel implements ActionListener {
        previousCoords = new int[2];
        score = 0;
        level = 1;
+       timerSpeed = new Timer(100, new ActionListener() {
+    	   @Override
+    	   public void actionPerformed(ActionEvent ae) {
+				updateSpeed(150);
+    	   }
+       });
        timerWorddle = new Timer(100, new ActionListener() {
     	   @Override
     	   public void actionPerformed(ActionEvent ae) {
-				//System.out.println("timerWorddle");
-				//scoreWorddle(inputLetters);
-				//removeBricksWorddle();
-				worddle = false;
+    		   durationWorddle += timerWorddle.getDelay();
+    		   if (durationWorddle >= 30000) {
+    	   			System.out.println("Worddle off");
+        			System.out.println("Suppression des briques Worddle");
+    				isWorddle = false;
+        			scoreWorddle(inputLetters);
+    				removeBricksWorddle();
+    			   	timerWorddle.stop();
+    			   	durationWorddle = 0;
+       			} else {
+    	   			//System.out.println("Worddle on");
+       			}
     	   }
        });
-       worddle = false;
+       isWorddle = false;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
        //bonuses = new LinkedList<Bonus>();
@@ -538,7 +554,7 @@ public class Board extends JPanel implements ActionListener {
         } else {
         	Random r = new Random();
         	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
-        	if(x == 1) {
+        	if(x == 1 && !isWorddle) {
         		newBonus();
         	}
         }
@@ -617,8 +633,8 @@ public class Board extends JPanel implements ActionListener {
     
 	    // Verifie si le mot n'est pas vide
 	    if(word != null && !word.isEmpty()) {
-	    	System.out.println("Le mot n'est pas null");
-	    	System.out.println(word);
+	    	/*System.out.println("Le mot n'est pas null");
+	    	System.out.println(word);*/
 	    	// Verifier si le mot est dans le dictionnaire
 	    	validWord = dictionary.validateWord(word);
 	    	if(validWord) {
@@ -637,7 +653,11 @@ public class Board extends JPanel implements ActionListener {
 		 
 		clearCurWorddle();
 		inputLetters = "";
-		 
+		
+		printWord.setText(inputLetters);
+    	printWord.setBounds(300,-25, 300, 100);     	
+    	picture.add(printWord);
+    	
 		return validWord;
     }
     
@@ -685,6 +705,10 @@ public class Board extends JPanel implements ActionListener {
         
         inputLetters = "";
         curLine = -1;
+        
+        printWord.setText(inputLetters);
+    	printWord.setBounds(300,-25, 300, 100);     	
+    	picture.add(printWord);
     }
     
     private void removeBricksWorddle() {
@@ -700,7 +724,7 @@ public class Board extends JPanel implements ActionListener {
     	clearCurWorddle();
         inputLetters = "";
         curLine = -1;
-        worddle = false;
+        isWorddle = false;
     }
     
     private void fallColumn(int x, int y) {
@@ -786,6 +810,7 @@ public class Board extends JPanel implements ActionListener {
     			inputLetters += Character.toLowerCase(letterAt(newX,newY));
     			bricks[newX][newY][2] = 1;
     			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    			// Affichage des lettres saisies par l'utilisateur
     			printWord.setText(inputLetters);
     	    	printWord.setBounds(300,-25, 300, 100);     	
     	    	picture.add(printWord);
@@ -827,16 +852,13 @@ public class Board extends JPanel implements ActionListener {
 			break;
 		case Worddle:
 			inputLetters = "";
-			worddle = true;
-			if(worddle) {
-				System.out.println("timerWorddle.start()");
-				timerWorddle.start();
-			} else {
-				System.out.println("timerWorddle.stop()");
-				timerWorddle.stop();
-			}
+			isWorddle = true;
+			timerWorddle.start();
 			break;
-		case Speed:
+		case BonusSpeed:
+			speedBonus();
+			break;
+		case MalusSpeed:
 			speedBonus();
 			break;
 		case BonusScore:
@@ -858,7 +880,7 @@ public class Board extends JPanel implements ActionListener {
     		// Verifie si l'utilisateur clique sur une brique adjacente a la precedente
     		if(((previousCoords[0] + 1) == newX || previousCoords[0] == newX || (previousCoords[0] - 1) == newX) && 
 		       ((previousCoords[1] + 1) == newY || previousCoords[1] == newY || (previousCoords[1] - 1) == newY)) {
-				System.out.println("Lettre adjacente");
+				//System.out.println("Lettre adjacente");
 				
 				//int curId = idAt(newX, newY);
 
@@ -869,7 +891,11 @@ public class Board extends JPanel implements ActionListener {
 					//bricks[newX][newY][2] = 1;
 					previousCoords[0] = newX;
 					previousCoords[1] = newY;
-					System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+					//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+					// Affichage des lettres saisies par l'utilisateur
+	    			printWord.setText(inputLetters);
+	    	    	printWord.setBounds(300,-25, 300, 100);     	
+	    	    	picture.add(printWord);
 				} else {
 					System.err.println("La lettre a déjà été utilisée pour ce mot");
 				}
@@ -920,7 +946,8 @@ public class Board extends JPanel implements ActionListener {
 	}
 
 	private void speedBonus() {
-    	
+		//timer.setRepeats(false);
+		//timerSpeed.start();
     }
     
     class MouseManager implements MouseListener
@@ -931,7 +958,7 @@ public class Board extends JPanel implements ActionListener {
 	    	// Verifie si on clique dans l'espace du jeu
 	    	if(e.getX() >= BoardLeft && e.getX() <= (BoardLeft+GameWidth) && e.getY() >= BoardTop && e.getY() <= (BoardTop+GameHeight)) {
 	    		//System.out.println("Clic dans le bidule");
-	    		if(!worddle)
+	    		if(!isWorddle)
 	    			anagram(e.getX(), e.getY());
 	    		else
 	    			worddleBonus(e.getX(), e.getY());
@@ -968,7 +995,7 @@ public class Board extends JPanel implements ActionListener {
     			System.out.println("Suppression des briques Worddle dans if");
     			scoreWorddle(inputLetters);
 				removeBricksWorddle();
-				worddle = false;
+				isWorddle = false;
     		}
     		
     		if (keycode == 'c' || keycode == 'C') {
@@ -977,7 +1004,7 @@ public class Board extends JPanel implements ActionListener {
     		}
     		
     		if (keycode == 'w' || keycode == 'W') {
-    			worddle = true;
+    			isWorddle = true;
     			/*Timer timerBonus = new Timer(100, new ActionListener() {
     			    @Override
     			    public void actionPerformed(ActionEvent e) {
@@ -1009,7 +1036,7 @@ public class Board extends JPanel implements ActionListener {
 	    			oneLineDown();
 	    			break;
 	    		case KeyEvent.VK_ENTER:
-	    			if(worddle) {
+	    			if(isWorddle) {
 	    				System.out.println("Entrée en mode Worddle");
 	    				validateWordWorddle(inputLetters);
 	    			} else if(curLine != -1) {

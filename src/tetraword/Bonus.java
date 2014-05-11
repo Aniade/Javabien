@@ -1,20 +1,19 @@
 package tetraword;
 
 import java.util.Random;
-import java.util.Timer;
 
 import javax.swing.ImageIcon;
 
 public class Bonus {
 	
 	// Tetrominoes liste les 7 formes possibles des tetrominos + une forme vide appelee NoShape
-    enum Bonuses { NoBonus, Worddle, Speed, BonusScore, MalusScore };
+    enum Bonuses { NoBonus, Worddle, BonusSpeed, MalusSpeed, BonusScore, MalusScore };
 	
 	private int[]bonusCoords;
     private Bonuses bonusType;
     private ImageIcon bonusImg;
-	boolean activated;
-	Timer timer;
+	//boolean activated;
+	//Timer timer;
     
 	// Constructeur
     public Bonus() {
@@ -23,7 +22,7 @@ public class Bonus {
     	bonusCoords[1] = 0;
         setBonus(Bonuses.NoBonus);
         bonusImg = new ImageIcon();
-        activated = false;
+        //activated = false;
         
         /*timer.schedule(new TimerTask() {
         	public void run() {
@@ -50,9 +49,10 @@ public class Bonus {
     public void setRandomBonus()
     {
         Random r = new Random();
-        int x = Math.abs(r.nextInt()) % 4 + 1;
+        int x = Math.abs(r.nextInt()) % 5 + 1;
         Bonuses[] values = Bonuses.values(); 
         setBonus(values[x]);
+        System.out.println("chemin img : " + "/pictures/bonus/" + values[x].toString() + ".png");
         setImage(values[x].toString());
     }
     
