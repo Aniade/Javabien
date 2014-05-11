@@ -105,7 +105,7 @@ public class Board extends JPanel implements ActionListener {
        previousCoords = new int[2];
        score = 0;
        level = 1;
-       worddle = false;
+       worddle = true;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
        //bonuses = new LinkedList<Bonus>();
@@ -632,13 +632,6 @@ public class Board extends JPanel implements ActionListener {
     	if(validateWordAnagram(inputLetters) && isLineFull(y)) {
     		++numLinesRemoved;	
     		printLine.setText(Integer.toString(numLinesRemoved)); 
-    		
-    		// Augmentation du score
-    		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-    		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-    		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-    		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
-            level = score/100 + 1;
         	// Parcourir toutes les pieces
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
@@ -665,29 +658,30 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void removeBricksWorddle() {
-		// TODO Augmentation du score
-		/*System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
-        level = score/100 + 1;*/
     	// Parcourir toutes les pieces
         for (int i = 0; i < BoardWidth; ++i) {
-        	for (int j = 0; j < BoardHeight; ++j) {
-        		if(bricks[i][j][2] == 1) {
-        			// Suppression de la brique
-        			board[(j * BoardWidth) + i] = shapeAt(i, j + 1);
-        			bricks[i][j][0] = idAt(i, j + 1);
-        			bricks[i][j][1] = letterAt(i, j + 1);
-        			bricks[i][j][2] = 0;
-        		}
-        	}
+            for (int j = 0; j < BoardHeight - 1; ++j) {
+            	if(bricks[i][j][2] == 1) {
+            		fallColumn(i, j);
+            	}
+            }
         }
     	
     	clearCurWorddle();
         inputLetters = "";
         curLine = -1;
         worddle = false;
+    }
+    
+    private void fallColumn(int x, int y) {
+    	// Parcourir toutes les pieces
+        for (int i = y; i < BoardHeight - 1; ++i) {
+        		// Suppression de la ligne
+        		board[(i * BoardWidth) + x] = shapeAt(x, i + 1);
+    			bricks[x][i][0] = idAt(x, i + 1);
+    			bricks[x][i][1] = letterAt(x, i + 1);
+    			bricks[x][i][2] = clickAt(x, i + 1);
+        }
     }
     
     private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
@@ -774,6 +768,30 @@ public class Board extends JPanel implements ActionListener {
     		bestAnagram = "";
     		System.err.println("La ligne n'est pas pleine");
     	}
+    }
+    
+    private void scoreAnagram(String word) {
+        printScore.setText(Integer.toString(score)); 	
+		printLevel.setText(Integer.toString(level));
+		
+		// Augmentation du score
+		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
+		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
+        level = score/100 + 1;
+    }
+    
+    private void scoreWorddle(String word) {
+        printScore.setText(Integer.toString(score)); 	
+		printLevel.setText(Integer.toString(level));
+		
+		// Augmentation du score
+		System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+		System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+		System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
+		score += (int)((double)inputLetters.length() / (double)bestAnagram.length() * 20);
+        level = score/100 + 1;
     }
     
     private void applyBonus(Bonuses bonusType) {
@@ -942,6 +960,7 @@ public class Board extends JPanel implements ActionListener {
     		
     		if (keycode == 'd' || keycode == 'D') {
     			System.out.println("Suppression des briques Worddle dans if");
+    			scoreWorddle(inputLetters);
 				removeBricksWorddle();
 				worddle = false;
     		}
@@ -974,15 +993,16 @@ public class Board extends JPanel implements ActionListener {
 	    				validateWordWorddle(inputLetters);
 	    			} else if(curLine != -1) {
 	    				System.out.println("Entrée en mode Anagramme");
+	    				scoreAnagram(inputLetters);
 	    				removeLine(curLine);
 	    			}
 	    			break;
-	    		case 'd':
+	    		/*case 'd':
 	    			System.out.println("Suppression des briques Worddle");
 					removeBricksWorddle();
 					worddle = false;
 					break;
-	    		/*case 'd':
+	    		case 'd':
 					oneLineDown();
 					break;
 				case 'D':
