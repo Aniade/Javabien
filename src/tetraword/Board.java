@@ -31,59 +31,61 @@ import tetraword.Shape.Tetrominoes;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
-
+	
+	// Interface
 	private ImageIcon ii, btSound, btMute, btBreak;
     private JLabel picture, bt_sound, bt_break, pause, gameover;
     private JLabel printWord = new JLabel(); 
     private JLabel labelBonus = new JLabel();
     private PrintText printScore, printLevel, printLine;
     
+    // Son
+    private PlaySound sound;
+    
+    // Dimensions du plateau
 	final int BoardWidth = 10;
     final int BoardHeight = 20;
     final int BoardTop = 64;
     final int BoardLeft = 120;
     final int GameWidth = 279;
     final int GameHeight = 560;
-
+    
+    // Evenements sur le plateau
     Timer timer;
+    boolean isStarted = false; // le jeu est-il actif
+    boolean isPaused = false; // le jeu est-il en pause
     private boolean isSound = true; // le son est-il active ?
-    boolean isFallingFinished = false; // la piece a-t-elle fini de tomber ?
-    boolean isStarted = false;
-    boolean isPaused = false;
-    int numLinesRemoved = 0; // compte le nombre de lignes supprimees
-    int curX = 0; // position actuelle de la piece qui tombe
-    int curY = 0; // position actuelle de la piece qui tombe
-    //JLabel statusbar;
-    Shape curPiece; // piece qui tombe                                 
-    Tetrominoes[] board;
+    int speed; // vitesse de chute des pieces
+    int score; // score
+    int level; // niveau
+    
+    // Gestion des Tetrominoes                        
+    Tetrominoes[] board; // tableau contenant toutes formes présentes sur le plateau en fonction des coordonnées
     int[][][] bricks; // tableau qui contient l'id, la lettre et le clic pour chaque brique selon ses coordonnees dans le board
     int lastShapeId = -4; // dernier id attribue a une brique
-
-    int curLine; // ligne sur laquelle l'utilisateur clique
+    // Tetrominoes qui tombe
+    Shape curPiece; // forme de la piece qui tombe 
+    int curX = 0; // position de la piece qui tombe
+    int curY = 0; // position de la piece qui tombe
+    boolean isFallingFinished = false; // la piece a-t-elle fini de tomber ?
+    
+    // Gestion de la saisie des lettres
     String inputLetters = ""; // lettres saisies au clic par l'utilisateur
-    String bestAnagram = ""; // longueur du meilleur anagramme possible sur la ligne actuelle
+    String bestAnagram = ""; // meilleur anagramme possible sur la ligne actuelle
+    // Anagramme
+    int curLine; // ligne sur laquelle l'utilisateur clique
     int difficulty = 30; // difficulte des anagrammes
+    int numLinesRemoved = 0; // nombre de lignes supprimees avec le mode anagramme
     
-    int speed; // vitesse de chute des pieces
-    int score;
-    int level;
-    
-    //LinkedList<Bonus> bonuses;
-	private Bonus curBonus; // Bonus affiche
-	private Bonuses[] bonus;
-	private Timer timerWorddle;
-	private int delayBonus;
-	private Timer timerSpeed;
-	private boolean isWorddle;
-	private boolean isSpeed;
-	private int[] previousCoords;
-	int[][][] curWorddle; //(0,0) = x, (1,0) = y, (2,0) = id, lettre, validation
-    boolean cptTimer = true;
-    int typeBonusSpeed; // 0 = malus, 1 = bonus
-	//LinkedList<Integer> worddleIds;
+    // Bonus
 	private Timer timerBonus;
-
-	private PlaySound sound;
+	private int elapsedTime; // Temps ecoule depuis le debut du timer
+	private Bonus curBonus; // Bonus actuellement affiche sur le plateau
+	private Bonuses activeBonus; // Bonus en cours
+	// Worddle
+	private int[] previousCoords; // Coordonnees de la derniere lettre cliquee en mode worddle
+	int[][][] curWorddle; // Mot actuellement saisi en mode worddle
+						  // (0,0) = x, (1,0) = y, (2,_) = lettre, validation
 
 	public Board(GameFrame parent) throws UnsupportedAudioFileException, IOException {
        setFocusable(true);
@@ -105,80 +107,71 @@ public class Board extends JPanel implements ActionListener {
 
        board = new Tetrominoes[BoardWidth * BoardHeight];
        bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
-       bonus = new Bonuses[BoardWidth * BoardHeight];
        previousCoords = new int[2];
        score = 0;
        level = 1;
+       elapsedTime = 0;
        timerBonus = new Timer(100, new ActionListener() {
     	   @Override
     	   public void actionPerformed(ActionEvent ae) {
-    		   delayBonus += timerSpeed.getDelay();
+    		   elapsedTime += timerBonus.getDelay();
     		   
-    		   if(delayBonus >= 5000) {
-        		   picture.remove(labelBonus);
-        		   curBonus = new Bonus();
-        		   
-    			   timerBonus.stop();
-    			   delayBonus = 0;
+    		   switch (activeBonus) {
+    		   	case NoBonus:
+	    			// Suppression du bonus affiche au bout de 5 secondes
+	    			if(elapsedTime >= 5000) {
+	        		   picture.remove(labelBonus);
+	        		   curBonus = new Bonus();
+	        		   
+	    			   timerBonus.stop();
+	    			   elapsedTime = 0;
+	    			}
+	    			break;
+	    		case Worddle:
+	    			// Desactivation du mode worddle au bout de 30 secondes
+	    			if (elapsedTime >= 30000) {
+	    	   			System.out.println("Worddle off");
+	        			System.out.println("Suppression des briques Worddle");
+	        			// TODO scoreWorddle(inputLetters);
+	    				removeBricksWorddle();
+	        			activeBonus = Bonuses.NoBonus;
+	    				timerBonus.stop();
+	    				elapsedTime = 0;
+	       			}
+	    			break;
+	    		case BonusSpeed:
+	    			// Retour a la vitesse normale au bout de 10 secondes
+	    			if(elapsedTime >= 10000) {
+	     			   System.out.println("Bonus speed off");
+	     			   updateSpeed();
+	     			   activeBonus = Bonuses.NoBonus;
+	     			   timerBonus.stop();
+	     			   elapsedTime = 0;
+	    			}
+	    			break;
+	    		case MalusSpeed:
+	    			// Retour a la vitesse normale au bout de 10 secondes
+	    			if(elapsedTime >= 10000) {
+	    				System.out.println("Bonus speed off");
+	    				updateSpeed();
+	    				activeBonus = Bonuses.NoBonus;
+	    				timerBonus.stop();
+	    				elapsedTime = 0;
+	    			}
+	    			break;
+	    		default:
+	    			break;
     		   }
     	   }
        });
-       delayBonus = 0;
-       timerSpeed = new Timer(100, new ActionListener() {
-    	   @Override
-    	   public void actionPerformed(ActionEvent ae) {
-    		   delayBonus += timerSpeed.getDelay();
-    		   if(delayBonus < 10000 && cptTimer) {
-    			   cptTimer = false;
-        		   if(typeBonusSpeed == 1) {
-        			   System.out.println("deux fois plus vite");
-        			   if((speed/2) < 150)
-        				   setSpeed(150);
-        			   else
-        				   setSpeed(speed/2);
-        		   }
-        		   else {
-        			   System.out.println("deux fois moins vite");
-        			   setSpeed(speed*2);
-        		   }
-    		   } else if(delayBonus >= 10000) {
-    			   System.out.println("Bonus speed off");
-    			   isSpeed = false;
-    			   timerSpeed.stop();
-    			   updateSpeed();
-    			   delayBonus = 0;
-    			   cptTimer = true;
-    		   }
-    	   }
-       });
-       timerWorddle = new Timer(100, new ActionListener() {
-    	   @Override
-    	   public void actionPerformed(ActionEvent ae) {
-    		   delayBonus += timerWorddle.getDelay();
-    		   if (delayBonus >= 30000) {
-    	   			System.out.println("Worddle off");
-        			System.out.println("Suppression des briques Worddle");
-    				isWorddle = false;
-        			scoreWorddle(inputLetters);
-    				removeBricksWorddle();
-    			   	timerWorddle.stop();
-    			   	delayBonus = 0;
-       			} else {
-    	   			//System.out.println("Worddle on");
-       			}
-    	   }
-       });
-       isSpeed = false;
-       isWorddle = false;
+       activeBonus = Bonuses.NoBonus;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
-       //bonuses = new LinkedList<Bonus>();
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
        clearBoard();
        
        newBonus();
-       //timerBonus = new Timer(2000, this);
     }
     
     // Verifie si la piece a fini de tomber
@@ -202,10 +195,8 @@ public class Board extends JPanel implements ActionListener {
     	for(int i = 0; i < BoardWidth; i++) {
     		sb.append(letterAt(i,y));
     	}
-    	//System.out.println("Les lettres a la ligne " + y + " sont " + sb);
 		return sb.toString();
     }
-    //Bonuses bonusAt(int x, int y) { return bonus[(y * BoardWidth) + x]; }
 
     public void start()
     {
@@ -231,18 +222,16 @@ public class Board extends JPanel implements ActionListener {
             timer.stop();
             breakMenu();
     		System.out.println("Pause");
-            //statusbar.setText("paused");
         } else {
             timer.start();
             pause.setVisible(false);
             picture.setVisible(true);
-            //statusbar.setText(String.valueOf(numLinesRemoved));
         }
         repaint();
     }
     
 	//Menu pause
-    public void breakMenu(){
+    public void breakMenu() {
     	sound.stop();
     	sound.close();
     	
@@ -255,10 +244,11 @@ public class Board extends JPanel implements ActionListener {
 	    
         final Color blue =new Color(46,49,146);
         
-        //Bouton Continuer
+        // Bouton Continuer
         final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, Color.black, 200, false);
         pause.add(bt_continue);
-        /*On affiche la page du jeu*/
+        
+        // Affichage la page du jeu
         bt_continue.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseEntered(MouseEvent e) {
@@ -280,7 +270,7 @@ public class Board extends JPanel implements ActionListener {
     }
     
     //Menu game Over
-    public void gameOver(){
+    public void gameOver() {
     	clearBoard();
 	    picture.setVisible(false);
 
@@ -294,10 +284,9 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonNewGame(gameover, 280);
         MenuButton.buttonMenu(gameover,360);        
         MenuButton.buttonClose(gameover, 440);
-    	 	
     }
     
-    public void buildInterface(){
+    public void buildInterface() {
     	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
@@ -385,7 +374,6 @@ public class Board extends JPanel implements ActionListener {
         	}
         });
         
-        
         Font font = new Font("Arial",Font.BOLD,22);
         Font font_level = new Font("Arial",Font.BOLD,36);
         
@@ -399,8 +387,7 @@ public class Board extends JPanel implements ActionListener {
     
     // Dessine tous les objets
     @Override
-    public void paint(Graphics g)
-    {   	
+    public void paint(Graphics g) {   	
     	super.paint(g);    	
     	
     	if(!isPaused) {
@@ -435,23 +422,9 @@ public class Board extends JPanel implements ActionListener {
                           curBonus.getBonus());
             }
     	}
-    	
-    	
-    	/*Gestion Musique*/
-        /*if(ThreadPlaySound.endMusic && !isPaused && isSound){
-      	  try {
-			sound = new PlaySound(new File("/audio/test.wav"));
-		} catch (UnsupportedAudioFileException | IOException e) {
-			e.printStackTrace();
-		}
-      	  sound.open();
-      	  sound.play();
-      	  ThreadPlaySound.endMusic = false;
-        }*/
     }
 
-    private void dropDown()
-    {
+    private void dropDown() {
         int newY = curY;
         while (newY > 0) {
             if (!tryMove(curPiece, curX, newY - 1))
@@ -463,24 +436,21 @@ public class Board extends JPanel implements ActionListener {
         pieceDropped();
     }
 
-    private void oneLineDown()
-    {        
+    private void oneLineDown() {        
     	if (!tryMove(curPiece, curX, curY - 1))
             pieceDropped();
     }
 
-
-    private void clearBoard()
-    {
+    private void clearBoard() {
         for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
             board[i] = Tetrominoes.NoShape;
-            bonus[i] = Bonuses.NoBonus;
         }
         curBonus.setBonus(Bonuses.NoBonus);
+        activeBonus = Bonuses.NoBonus;
+        curLine = -1;
     }
 
-    private void pieceDropped()
-    {
+    private void pieceDropped() {
         for (int i = 0; i < 4; ++i) {
             int x = curX + curPiece.x(i);
             int y = curY - curPiece.y(i);
@@ -489,7 +459,6 @@ public class Board extends JPanel implements ActionListener {
             bricks[x][y][0] = curPiece.getId(i);
             bricks[x][y][1] = curPiece.getLetter(i);
             bricks[x][y][2] = curPiece.getClick(i);
-            bonus[(y * BoardWidth) + x] = curBonus.getBonus();
         }
         
         if (!isFallingFinished) {
@@ -498,8 +467,7 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void newPiece()
-    {
+    private void newPiece() {
 		curPiece.setRandomShape();
         curPiece.setRandomLetters();
         lastShapeId += 4;
@@ -516,8 +484,7 @@ public class Board extends JPanel implements ActionListener {
         }
     }
     
-    private void newBonus()
-    {
+    private void newBonus() {
     	curBonus.setRandomBonus();
     	curBonus.setRandomX();
     	curBonus.setRandomY();
@@ -525,7 +492,8 @@ public class Board extends JPanel implements ActionListener {
     		curBonus.setRandomX();
         	curBonus.setRandomY();
     	}
-
+    	
+    	activeBonus = Bonuses.NoBonus;
 		timerBonus.start();
     }
     
@@ -565,9 +533,6 @@ public class Board extends JPanel implements ActionListener {
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
     {
-        // TODO 
-    	//System.out.println("worddle : " + worddle);
-    	
     	for (int i = 0; i < 4; ++i) {
             int x = newX + newPiece.x(i);
             int y = newY - newPiece.y(i);
@@ -609,7 +574,7 @@ public class Board extends JPanel implements ActionListener {
         } else {
         	Random r = new Random();
         	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
-        	if(x == 1 && !isWorddle && !isSpeed) {
+        	if(x == 1 && activeBonus == Bonuses.NoBonus) {
         		newBonus();
         	}
         }
@@ -688,8 +653,6 @@ public class Board extends JPanel implements ActionListener {
     
 	    // Verifie si le mot n'est pas vide
 	    if(word != null && !word.isEmpty()) {
-	    	/*System.out.println("Le mot n'est pas null");
-	    	System.out.println(word);*/
 	    	// Verifier si le mot est dans le dictionnaire
 	    	validWord = dictionary.validateWord(word);
 	    	if(validWord) {
@@ -700,6 +663,7 @@ public class Board extends JPanel implements ActionListener {
 	    				}
 	    			}
 	    		}
+	    		scoreWorddle(word);
 	    		System.out.println("Le mot est correct");
 	    	} else {
 	    		System.out.println("Le mot est incorrect");
@@ -779,7 +743,7 @@ public class Board extends JPanel implements ActionListener {
     	clearCurWorddle();
         inputLetters = "";
         curLine = -1;
-        isWorddle = false;
+        activeBonus = Bonuses.NoBonus;
     }
     
     private void fallColumn(int x, int y) {
@@ -810,13 +774,6 @@ public class Board extends JPanel implements ActionListener {
             new Color(255, 220, 0), new Color(51, 166, 167), 
             new Color(0, 103, 167), new Color(90, 27, 105)
         };
-
-
-        
-        //Font f = new Font("visitor", Font.PLAIN, 10);  // make a new font object
-        //Font font = new Font("Sans-Serif", Font.PLAIN, 14);
-
-        //Color black = new Color(0, 0, 0);
         
     	Color color = colors[shape.ordinal()];
 
@@ -837,8 +794,6 @@ public class Board extends JPanel implements ActionListener {
         
         // Ecriture de la lettre
 	    g.setColor(color.darker());
-	    //g.setFont(font);
-	    //g.setFont(f); // set the objects font using setFont();
 		g.drawString(letter, x + 11, y + 19);
 
     }
@@ -847,7 +802,6 @@ public class Board extends JPanel implements ActionListener {
         // Conversion des pixels (recuperes au clic) en nombre de cases
         // x appartient a [0,9]
         // y appartient a [19,0]
-    	//System.out.println("(" + x + "," + y + ")");
     	int newX = (x - BoardLeft) / squareWidth();
     	int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
     	
@@ -864,7 +818,7 @@ public class Board extends JPanel implements ActionListener {
     		if(bricks[newX][newY][2] == 0) {
     			inputLetters += Character.toLowerCase(letterAt(newX,newY));
     			bricks[newX][newY][2] = 1;
-    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+    			
     			// Affichage des lettres saisies par l'utilisateur
     			printWord.setText(inputLetters);
     	    	printWord.setBounds(300,-25, 300, 100);     	
@@ -901,30 +855,32 @@ public class Board extends JPanel implements ActionListener {
     
     private void applyBonus(Bonuses bonusType) {
     	switch (bonusType) {
-		case NoBonus:
-			break;
-		case Worddle:
-			inputLetters = "";
-			isWorddle = true;
-			timerWorddle.start();
-			break;
-		case BonusSpeed:
-			typeBonusSpeed = 1;
-			isSpeed = true;
-			timerSpeed.start();
-			break;
-		case MalusSpeed:
-			typeBonusSpeed = 0;
-			isSpeed = true;
-			timerSpeed.start();
-			break;
-		case BonusScore:
-			scoreBonus(+1);
-			break;
-		case MalusScore:
-			scoreBonus(-1);
-			break;
-    	}
+			case NoBonus:
+				break;
+			case Worddle:
+				inputLetters = "";
+				activeBonus = Bonuses.Worddle;
+				timerBonus.start();
+				break;
+			case BonusSpeed:
+				activeBonus = Bonuses.BonusSpeed;
+				setSpeed(speed/2);
+				timerBonus.start();
+				break;
+			case MalusSpeed:
+				activeBonus = Bonuses.MalusSpeed;
+				setSpeed(speed*2);
+				timerBonus.start();
+				break;
+			case BonusScore:
+				activeBonus = Bonuses.BonusScore;
+				scoreBonus();
+				break;
+			case MalusScore:
+				activeBonus = Bonuses.MalusScore;
+				scoreBonus();
+				break;
+	    }
     }
 
 	private void worddleBonus(int x, int y) {
@@ -937,10 +893,6 @@ public class Board extends JPanel implements ActionListener {
     		// Verifie si l'utilisateur clique sur une brique adjacente a la precedente
     		if(((previousCoords[0] + 1) == newX || previousCoords[0] == newX || (previousCoords[0] - 1) == newX) && 
 		       ((previousCoords[1] + 1) == newY || previousCoords[1] == newY || (previousCoords[1] - 1) == newY)) {
-				//System.out.println("Lettre adjacente");
-				
-				//int curId = idAt(newX, newY);
-
 				// Verifie si la brique n'est pas deja utilisee dans le mot
 				if(curWorddle[newX][newY][1] == 0) {
 					inputLetters += Character.toLowerCase(letterAt(newX,newY));
@@ -948,7 +900,7 @@ public class Board extends JPanel implements ActionListener {
 					//bricks[newX][newY][2] = 1;
 					previousCoords[0] = newX;
 					previousCoords[1] = newY;
-					//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
+					
 					// Affichage des lettres saisies par l'utilisateur
 	    			printWord.setText(inputLetters);
 	    	    	printWord.setBounds(300,-25, 300, 100);     	
@@ -963,7 +915,6 @@ public class Board extends JPanel implements ActionListener {
 				clearCurWorddle();
 				inputLetters += Character.toLowerCase(letterAt(newX,newY));
 				curWorddle[newX][newY][1] = 1;
-				//bricks[newX][newY][2] = 1;
 				previousCoords[0] = newX;
 				previousCoords[1] = newY;
 				System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
@@ -985,32 +936,17 @@ public class Board extends JPanel implements ActionListener {
 		}
 	}
 
-	private void scoreBonus(int mult) {
+	private void scoreBonus() {
     	Random r = new Random();
         int x = (Math.abs(r.nextInt()) % 5 + 1) * 10;
-        if(mult == -1) {
+        if(activeBonus == Bonuses.BonusScore) {
         	System.out.println("Bonus de " + x + " points");
-        } else if (mult == 1) {
+            addPoints(x);
+        } else if (activeBonus == Bonuses.MalusScore) {
         	System.out.println("Malus de " + x + " points");
+            addPoints(-x);
         }
-        addPoints(mult * x);
 	}
-    
-	/*private void speedBonus(int mult) {
-		Random r = new Random();
-        int x = (Math.abs(r.nextInt()) % 3 + 1) * 100;
-        updateSpeed();
-        if(curBonus.getBonus() == Bonuses.BonusScore) {
-            System.out.println("+" + x + " points");
-    		score += x;
-        }
-        else {
-        	System.out.println("-" + x + " points");
-    		score -= x;
-    		if(score < 0)
-    			score = 0;
-        }
-	}*/
 	
     class MouseManager implements MouseListener
     {
@@ -1020,14 +956,11 @@ public class Board extends JPanel implements ActionListener {
 	    	// Verifie si on clique dans l'espace du jeu
 	    	if(e.getX() >= BoardLeft && e.getX() <= (BoardLeft+GameWidth) && e.getY() >= BoardTop && e.getY() <= (BoardTop+GameHeight)) {
 	    		//System.out.println("Clic dans le bidule");
-	    		if(!isWorddle)
+	    		if(activeBonus == Bonuses.Worddle)
 	    			anagram(e.getX(), e.getY());
 	    		else
 	    			worddleBonus(e.getX(), e.getY());
 	    	}
-	    	/*else {
-	    		//System.out.println("Clic ailleurs");
-	    	}*/
         } 
 		@Override
 		public void mouseEntered(MouseEvent arg0) { /* Auto-generated method stub */ }
@@ -1053,19 +986,8 @@ public class Board extends JPanel implements ActionListener {
     			return;
     		}
     		
-    		if (keycode == 'd' || keycode == 'D') {
-    			System.out.println("Suppression des briques Worddle dans if");
-    			scoreWorddle(inputLetters);
-				removeBricksWorddle();
-				isWorddle = false;
-    		}
-    		
     		if (keycode == 'c' || keycode == 'C') {
     			setScore(900);
-    		}
-    		
-    		if (keycode == 'w' || keycode == 'W') {
-    			isWorddle = true;
     		}
     		
     		if (isPaused)
@@ -1091,7 +1013,7 @@ public class Board extends JPanel implements ActionListener {
 	    			oneLineDown();
 	    			break;
 	    		case KeyEvent.VK_ENTER:
-	    			if(isWorddle) {
+	    			if(activeBonus == Bonuses.NoBonus) {
 	    				System.out.println("Entrée en mode Worddle");
 	    				validateWordWorddle(inputLetters);
 	    			} else if(curLine != -1) {
@@ -1100,7 +1022,6 @@ public class Board extends JPanel implements ActionListener {
 	    			}
 	    			break;
              }
-
          }
      }
 }
