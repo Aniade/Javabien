@@ -15,7 +15,6 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
 
@@ -73,13 +72,16 @@ public class Board extends JPanel implements ActionListener {
 	private Bonus curBonus; // Bonus affiche
 	private Bonuses[] bonus;
 	private Timer timerWorddle;
-	private int durationWorddle;
+	private int delayBonus;
 	private Timer timerSpeed;
 	private boolean isWorddle;
+	private boolean isSpeed;
 	private int[] previousCoords;
 	int[][][] curWorddle; //(0,0) = x, (1,0) = y, (2,0) = id, lettre, validation
+    boolean cptTimer = true;
+    int typeBonusSpeed; // 0 = malus, 1 = bonus
 	//LinkedList<Integer> worddleIds;
-	//private Timer timerBonus;
+	private Timer timerBonus;
 
 	private PlaySound sound;
 
@@ -97,7 +99,7 @@ public class Board extends JPanel implements ActionListener {
        curPiece = new Shape();
        curBonus = new Bonus();
        curLine = -1;
-       speed = 800;
+       speed = 900;
        timer = new Timer(speed, this); // vitesse de descente des pieces
        timer.start();
 
@@ -107,29 +109,66 @@ public class Board extends JPanel implements ActionListener {
        previousCoords = new int[2];
        score = 0;
        level = 1;
+       timerBonus = new Timer(100, new ActionListener() {
+    	   @Override
+    	   public void actionPerformed(ActionEvent ae) {
+    		   delayBonus += timerSpeed.getDelay();
+    		   
+    		   if(delayBonus >= 5000) {
+        		   picture.remove(labelBonus);
+        		   curBonus = new Bonus();
+        		   
+    			   timerBonus.stop();
+    			   delayBonus = 0;
+    		   }
+    	   }
+       });
+       delayBonus = 0;
        timerSpeed = new Timer(100, new ActionListener() {
     	   @Override
     	   public void actionPerformed(ActionEvent ae) {
-				updateSpeed(150);
+    		   delayBonus += timerSpeed.getDelay();
+    		   if(delayBonus < 10000 && cptTimer) {
+    			   cptTimer = false;
+        		   if(typeBonusSpeed == 1) {
+        			   System.out.println("deux fois plus vite");
+        			   if((speed/2) < 150)
+        				   setSpeed(150);
+        			   else
+        				   setSpeed(speed/2);
+        		   }
+        		   else {
+        			   System.out.println("deux fois moins vite");
+        			   setSpeed(speed*2);
+        		   }
+    		   } else if(delayBonus >= 10000) {
+    			   System.out.println("Bonus speed off");
+    			   isSpeed = false;
+    			   timerSpeed.stop();
+    			   updateSpeed();
+    			   delayBonus = 0;
+    			   cptTimer = true;
+    		   }
     	   }
        });
        timerWorddle = new Timer(100, new ActionListener() {
     	   @Override
     	   public void actionPerformed(ActionEvent ae) {
-    		   durationWorddle += timerWorddle.getDelay();
-    		   if (durationWorddle >= 30000) {
+    		   delayBonus += timerWorddle.getDelay();
+    		   if (delayBonus >= 30000) {
     	   			System.out.println("Worddle off");
         			System.out.println("Suppression des briques Worddle");
     				isWorddle = false;
         			scoreWorddle(inputLetters);
     				removeBricksWorddle();
     			   	timerWorddle.stop();
-    			   	durationWorddle = 0;
+    			   	delayBonus = 0;
        			} else {
     	   			//System.out.println("Worddle on");
        			}
     	   }
        });
+       isSpeed = false;
        isWorddle = false;
        curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
        clearCurWorddle();
@@ -419,7 +458,7 @@ public class Board extends JPanel implements ActionListener {
                 break;
             --newY;
         }
-        updateScore(5);
+        addPoints(5);
 
         pieceDropped();
     }
@@ -455,7 +494,7 @@ public class Board extends JPanel implements ActionListener {
         
         if (!isFallingFinished) {
         	newPiece();
-        	updateScore(5);
+        	addPoints(5);
         }
     }
 
@@ -486,26 +525,42 @@ public class Board extends JPanel implements ActionListener {
     		curBonus.setRandomX();
         	curBonus.setRandomY();
     	}
-    	//System.out.println("Bonus (" + curBonus.x() + "," + curBonus.y() + ")");
+
+		timerBonus.start();
     }
     
-    private void updateScore(int points) {
+    private void setScore(int points) {
+    	score = points;
+    	updateScore();
+    }
+    
+    private void addPoints(int points) {
     	score += points;
+    	updateScore();
+    }
+    
+    private void updateScore() {
     	if(level != score/100 + 1) {
-    		updateSpeed(speed - 60);
+    		updateSpeed();
     	}
         level = score/100 + 1;
-        if(score >= 1000) {
-        	System.out.println("FELICITATIONS ! Vous avez gagné un voyage sur Mars !");
+        if (score < 0) {
+        	score = 0;
+        } else if(score >= 1000) {
+        	System.out.println("FELICITATIONS ! Vous avez gagné un Mars !");
         }
         printScore.setText(Integer.toString(score)); 	
 		printLevel.setText(Integer.toString(level));
     }
     
-    private void updateSpeed(int newSpeed) {
+    private void setSpeed(int newSpeed) {
     	speed = newSpeed;
     	System.out.println("vitesse : " + speed);
         timer.setDelay(speed);
+    }
+    
+    private void updateSpeed() {
+    	setSpeed(900 - (level * 60));
     }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
@@ -554,7 +609,7 @@ public class Board extends JPanel implements ActionListener {
         } else {
         	Random r = new Random();
         	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
-        	if(x == 1 && !isWorddle) {
+        	if(x == 1 && !isWorddle && !isSpeed) {
         		newBonus();
         	}
         }
@@ -825,14 +880,12 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void scoreAnagram(String word) {
-    	/*boolean valid = validateWordAnagram(inputLetters);
-    	if(valid)*/
     	if(word != null && !word.isEmpty()) {
 			// Augmentation du score
 			System.out.println("Nombre de lettres saisies : " + inputLetters.length());
 			System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
 			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-			updateScore((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
+			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
     	}
     }
     
@@ -856,16 +909,20 @@ public class Board extends JPanel implements ActionListener {
 			timerWorddle.start();
 			break;
 		case BonusSpeed:
-			speedBonus();
+			typeBonusSpeed = 1;
+			isSpeed = true;
+			timerSpeed.start();
 			break;
 		case MalusSpeed:
-			speedBonus();
+			typeBonusSpeed = 0;
+			isSpeed = true;
+			timerSpeed.start();
 			break;
 		case BonusScore:
-			scoreBonus();
+			scoreBonus(+1);
 			break;
 		case MalusScore:
-			scoreBonus();
+			scoreBonus(-1);
 			break;
     	}
     }
@@ -928,9 +985,21 @@ public class Board extends JPanel implements ActionListener {
 		}
 	}
 
-	private void scoreBonus() {
+	private void scoreBonus(int mult) {
     	Random r = new Random();
         int x = (Math.abs(r.nextInt()) % 5 + 1) * 10;
+        if(mult == -1) {
+        	System.out.println("Bonus de " + x + " points");
+        } else if (mult == 1) {
+        	System.out.println("Malus de " + x + " points");
+        }
+        addPoints(mult * x);
+	}
+    
+	/*private void speedBonus(int mult) {
+		Random r = new Random();
+        int x = (Math.abs(r.nextInt()) % 3 + 1) * 100;
+        updateSpeed();
         if(curBonus.getBonus() == Bonuses.BonusScore) {
             System.out.println("+" + x + " points");
     		score += x;
@@ -941,15 +1010,8 @@ public class Board extends JPanel implements ActionListener {
     		if(score < 0)
     			score = 0;
         }
-        printScore.setText(Integer.toString(score)); 	
-		printLevel.setText(Integer.toString(level));
-	}
-
-	private void speedBonus() {
-		//timer.setRepeats(false);
-		//timerSpeed.start();
-    }
-    
+	}*/
+	
     class MouseManager implements MouseListener
     {
 		@Override
@@ -999,18 +1061,11 @@ public class Board extends JPanel implements ActionListener {
     		}
     		
     		if (keycode == 'c' || keycode == 'C') {
-    			updateScore(900);
-    			updateSpeed(200);
+    			setScore(900);
     		}
     		
     		if (keycode == 'w' || keycode == 'W') {
     			isWorddle = true;
-    			/*Timer timerBonus = new Timer(100, new ActionListener() {
-    			    @Override
-    			    public void actionPerformed(ActionEvent e) {
-    			        worddle = false;
-    			    }
-    			});*/
     		}
     		
     		if (isPaused)
@@ -1044,17 +1099,6 @@ public class Board extends JPanel implements ActionListener {
 	    				removeLine(curLine);
 	    			}
 	    			break;
-	    		/*case 'd':
-	    			System.out.println("Suppression des briques Worddle");
-					removeBricksWorddle();
-					worddle = false;
-					break;
-	    		case 'd':
-					oneLineDown();
-					break;
-				case 'D':
-					oneLineDown();
-					break;*/
              }
 
          }

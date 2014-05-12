@@ -52,7 +52,6 @@ public class Bonus {
         int x = Math.abs(r.nextInt()) % 5 + 1;
         Bonuses[] values = Bonuses.values(); 
         setBonus(values[x]);
-        System.out.println("chemin img : " + "/pictures/bonus/" + values[x].toString() + ".png");
         setImage(values[x].toString());
     }
     
