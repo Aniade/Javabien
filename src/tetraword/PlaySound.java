@@ -5,9 +5,8 @@ import java.applet.Applet;
 import java.applet.AudioClip;
  
 public class PlaySound {
-		private URL url;
-	    private AudioClip sound;
-	    
+	private URL url;
+	private AudioClip sound;
 	    
 	public PlaySound(String title) {
 		url = PlaySound.class.getResource("/audio/"+title+".wav");
@@ -28,8 +27,7 @@ public class PlaySound {
 	public void stop(){	
 		sound.stop();
 	}
-	
-	
+		
 	public static void main(String[] args) {
 	    PlaySound p = new PlaySound("wrong");
 	    p.play();
