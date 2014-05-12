@@ -2,7 +2,6 @@ package tetraword;
 
 import java.awt.Color;
 import java.awt.Font;
-//import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -41,6 +40,8 @@ public class Board extends JPanel implements ActionListener {
     
     // Son
     private PlaySound sound;
+	private PlaySound soundRight = new PlaySound("right");
+	private PlaySound soundWrong = new PlaySound("wrong");
     
     // Dimensions du plateau
 	final int BoardWidth = 10;
@@ -49,6 +50,9 @@ public class Board extends JPanel implements ActionListener {
     final int BoardLeft = 120;
     final int GameWidth = 279;
     final int GameHeight = 560;
+    
+    // Configuration du jeu
+    private String configUniv;
     
     // Evenements sur le plateau
     Timer timer;
@@ -91,10 +95,10 @@ public class Board extends JPanel implements ActionListener {
        setFocusable(true);
        // Chargement de l'interface graphique
        buildInterface();
+       
        //Musique
-       sound = new PlaySound(new File("src/audio/test.wav"));
-       sound.open();
-       sound.play();
+       sound = new PlaySound(configUniv);
+       sound.loop();
        
        // Adapation de la difficulte en fonction de preferences de l'utilisateur
        setDifficulty();
@@ -160,6 +164,9 @@ public class Board extends JPanel implements ActionListener {
 	    			}
 	    			break;
 	    		default:
+    				activeBonus = Bonuses.NoBonus;
+    				timerBonus.stop();
+    				elapsedTime = 0;
 	    			break;
     		   }
     	   }
@@ -224,6 +231,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Pause");
         } else {
             timer.start();
+            sound.loop();
             pause.setVisible(false);
             picture.setVisible(true);
         }
@@ -233,7 +241,6 @@ public class Board extends JPanel implements ActionListener {
 	//Menu pause
     public void breakMenu() {
     	sound.stop();
-    	sound.close();
     	
     	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/bg_accueil.jpg"));            	 	
 	    pause = new JLabel(new ImageIcon(bgBreak.getImage()));
@@ -242,7 +249,7 @@ public class Board extends JPanel implements ActionListener {
 	    pause.setVisible(true);  
 	    picture.setVisible(false);
 	    
-        final Color blue =new Color(46,49,146);
+        final Color blue = new Color(46,49,146);
         
         // Bouton Continuer
         final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, Color.black, 200, false);
@@ -272,6 +279,11 @@ public class Board extends JPanel implements ActionListener {
     //Menu game Over
     public void gameOver() {
     	clearBoard();
+    	
+    	sound.stop();
+    	PlaySound soundGameOver = new PlaySound("gameover");
+		soundGameOver.play();
+		
 	    picture.setVisible(false);
 
     	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/gameover.jpg"));         
@@ -286,7 +298,7 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonClose(gameover, 440);
     }
     
-    public void buildInterface() {
+    public void buildInterface(){
     	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("conf/conf.properties"); 
@@ -299,46 +311,18 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Echec chargement");
     	}
 
-   	 	String configUniv = options.getProperty("Univers"); 
-    	switch (configUniv)
- 	   	{
- 	   	  case "western":
- 	        // Ajout d'une image de fond
- 	        ii = new ImageIcon(this.getClass().getResource("/pictures/cowboys.jpg"));
- 	        btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
- 	        btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
- 	        btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
- 	   	    break;
- 	   	  case "kungfu":
- 	        // Ajout d'une image de fond
- 	        ii = new ImageIcon(this.getClass().getResource("/pictures/ninjas.jpg"));
- 	        btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
- 	        btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
- 	        btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
- 	   	    break; 
- 	   	  case "pirate":
- 	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("/pictures/pirates.jpg"));
-	 	     btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_ninja.png"));
- 	         btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_ninja.png"));
- 	         btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_ninja.png"));
- 	   	    break; 
- 	   	  case "batman":
- 	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("/pictures/batman.jpg"));
-	 	     btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_batman.png"));
-	 	     btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_batman.png"));
-	 	     btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_batman.png"));  
- 	   	    break; 
- 	   	  default:
- 	         // Ajout d'une image de fond
- 	         ii = new ImageIcon(this.getClass().getResource("/pictures/pirates.jpg"));         
- 	   	}
-   	 	
+   	    configUniv = options.getProperty("Univers"); 
+   	    
+   	 	ii = new ImageIcon(this.getClass().getResource("/pictures/"+configUniv+".jpg"));   	 	
         picture = new JLabel(new ImageIcon(ii.getImage()));
         picture.setSize(525, 700);
         add(picture);
-        
+   	 	
+        // Boutons gestion du son
+   		btSound = new ImageIcon(this.getClass().getResource("/pictures/sound_"+configUniv+".png"));
+   		btMute = new ImageIcon(this.getClass().getResource("/pictures/mute_"+configUniv+".png"));
+   		btBreak = new ImageIcon(this.getClass().getResource("/pictures/break_"+configUniv+".png")); 
+
     	// Bouton pause
         bt_break = new JLabel(new ImageIcon(btBreak.getImage()));       
         bt_break.setBounds(430, 10, 30, 30); 
@@ -360,13 +344,13 @@ public class Board extends JPanel implements ActionListener {
         	@Override
         	public void mouseClicked(MouseEvent e) {
         		if(isSound){
-	   	             sound.stop();
-	   	             sound.close();
+	   	            sound.stop();
 	        		bt_sound.setIcon(btMute);
 	        		System.out.println("Et je coupe le son");
 	        		isSound = false;
         		}
         		else{
+        			sound.loop();
         			bt_sound.setIcon(btSound);
 	        		System.out.println("Et je remets le son");
 	        		isSound = true;
@@ -377,11 +361,11 @@ public class Board extends JPanel implements ActionListener {
         Font font = new Font("Arial",Font.BOLD,22);
         Font font_level = new Font("Arial",Font.BOLD,36);
         
-        //On affiche le score
+        // On affiche le score
         printScore = new PrintText(Integer.toString(0), 40, 55, font, Color.white, picture);
-        //On affiche le level
+        // On affiche le level
         printLevel = new PrintText(Integer.toString(1), 310, 582, font_level, Color.white, picture);        
-        //On affiche le nombre de ligne
+        // On affiche le nombre de ligne
         printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.white, picture);    
     }
     
@@ -533,20 +517,7 @@ public class Board extends JPanel implements ActionListener {
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
     {
-    	for (int i = 0; i < 4; ++i) {
-            int x = newX + newPiece.x(i);
-            int y = newY - newPiece.y(i);
-            if (x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight)
-                return false;
-            if (shapeAt(x, y) != Tetrominoes.NoShape)
-                return false;
-        }
-
-        curPiece = newPiece;
-        curX = newX;
-        curY = newY; 
-        
-        if (curBonus.getBonus() != Bonuses.NoBonus) {
+    	if (curBonus.getBonus() != Bonuses.NoBonus) {
         	// Verifie la collision entre la piece qui tombe et le bonus
         	for(int i = 0; i < 4; i++) {
     	    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
@@ -578,6 +549,19 @@ public class Board extends JPanel implements ActionListener {
         		newBonus();
         	}
         }
+    	
+    	for (int i = 0; i < 4; ++i) {
+            int x = newX + newPiece.x(i);
+            int y = newY - newPiece.y(i);
+            if (x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight)
+                return false;
+            if (shapeAt(x, y) != Tetrominoes.NoShape)
+                return false;
+        }
+
+        curPiece = newPiece;
+        curX = newX;
+        curY = newY;
     	        
         repaint();
        
@@ -637,8 +621,12 @@ public class Board extends JPanel implements ActionListener {
 				 //Verifier si le mot est dans le dictionnaire
 				 System.out.println("Meilleur anagramme : " + bestAnagram);
 				 validWord = dictionary.validateWord(word);
-				 if(validWord) System.out.println("L'anagramme est correct");
-				 if(!validWord) System.out.println("L'anagramme est incorrect");
+				 if(validWord) {
+			    	System.out.println("L'anagramme est correct");
+				 }
+				 if(!validWord){
+			    	System.out.println("L'anagramme est incorrect");
+				 }
 			 }
 		 }
 		 return validWord;
@@ -664,8 +652,10 @@ public class Board extends JPanel implements ActionListener {
 	    			}
 	    		}
 	    		scoreWorddle(word);
+	    		soundRight.play();
 	    		System.out.println("Le mot est correct");
 	    	} else {
+	    		soundWrong.play();
 	    		System.out.println("Le mot est incorrect");
 	    	}
 		}
@@ -698,6 +688,7 @@ public class Board extends JPanel implements ActionListener {
     private void removeLine(int y) {
     	boolean valid = validateWordAnagram(inputLetters);
     	if(valid && isLineFull(y)) {
+	    	soundRight.play();
     		++numLinesRemoved;
     		printLine.setText(Integer.toString(numLinesRemoved));
 			scoreAnagram(inputLetters);
@@ -714,6 +705,7 @@ public class Board extends JPanel implements ActionListener {
             }
     	}
     	else if(!valid && isLineFull(y)) {
+	    	soundWrong.play();
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
             		// Les lettres ne sont plus considerees comme deja cliquees
@@ -946,6 +938,7 @@ public class Board extends JPanel implements ActionListener {
         	System.out.println("Malus de " + x + " points");
             addPoints(-x);
         }
+        activeBonus = Bonuses.NoBonus;
 	}
 	
     class MouseManager implements MouseListener
