@@ -32,8 +32,9 @@ import tetraword.Shape.Tetrominoes;
 public class Board extends JPanel implements ActionListener {
 	
 	// Interface
-	private ImageIcon ii, btSound, btMute, btBreak;
+	private ImageIcon ii, imgBonus, btSound, btMute, btBreak;
     private JLabel picture, bt_sound, bt_break, pause, gameover;
+    private JLabel printBonus = new JLabel(); 
     private JLabel printWord = new JLabel(); 
     private JLabel labelBonus = new JLabel();
     private PrintText printScore, printLevel, printLine;
@@ -95,7 +96,7 @@ public class Board extends JPanel implements ActionListener {
        setFocusable(true);
        // Chargement de l'interface graphique
        buildInterface();
-       
+
        //Musique
        sound = new PlaySound(configUniv);
        sound.loop();
@@ -129,6 +130,7 @@ public class Board extends JPanel implements ActionListener {
 	        		   
 	    			   timerBonus.stop();
 	    			   elapsedTime = 0;
+	    			   printBonus();
 	    			}
 	    			break;
 	    		case Worddle:
@@ -141,6 +143,7 @@ public class Board extends JPanel implements ActionListener {
 	        			activeBonus = Bonuses.NoBonus;
 	    				timerBonus.stop();
 	    				elapsedTime = 0;
+	    				printBonus();
 	       			}
 	    			break;
 	    		case BonusSpeed:
@@ -151,6 +154,7 @@ public class Board extends JPanel implements ActionListener {
 	     			   activeBonus = Bonuses.NoBonus;
 	     			   timerBonus.stop();
 	     			   elapsedTime = 0;
+	     			   printBonus();
 	    			}
 	    			break;
 	    		case MalusSpeed:
@@ -161,12 +165,14 @@ public class Board extends JPanel implements ActionListener {
 	    				activeBonus = Bonuses.NoBonus;
 	    				timerBonus.stop();
 	    				elapsedTime = 0;
+	    				printBonus();
 	    			}
 	    			break;
 	    		default:
     				activeBonus = Bonuses.NoBonus;
     				timerBonus.stop();
     				elapsedTime = 0;
+    				printBonus();
 	    			break;
     		   }
     	   }
@@ -231,7 +237,7 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Pause");
         } else {
             timer.start();
-            sound.loop();
+            if(isSound) sound.loop();
             pause.setVisible(false);
             picture.setVisible(true);
         }
@@ -242,35 +248,25 @@ public class Board extends JPanel implements ActionListener {
     public void breakMenu() {
     	sound.stop();
     	
-    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/bg_accueil.jpg"));            	 	
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/pause.jpg"));            	 	
 	    pause = new JLabel(new ImageIcon(bgBreak.getImage()));
 	    pause.setSize(525, 700);
 	    add(pause);
 	    pause.setVisible(true);  
 	    picture.setVisible(false);
 	    
-        final Color blue = new Color(46,49,146);
         
         // Bouton Continuer
-        final MenuButton bt_continue = new MenuButton("Reprendre le jeu", blue, Color.black, 200, false);
+        final MenuButton bt_continue = new MenuButton("Reprendre le jeu", 200);
         pause.add(bt_continue);
         
         // Affichage la page du jeu
         bt_continue.addMouseListener(new MouseAdapter() {
         	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(Color.white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(Color.black, false);
-        	}
-        	@Override
         	public void mouseClicked(MouseEvent e) {
                 pause(); 
         	}
-        });
-        
+        });      
         MenuButton.buttonNewGame(pause, 280);
         MenuButton.buttonMenu(pause,360);        
         MenuButton.buttonClose(pause, 440);
@@ -282,7 +278,7 @@ public class Board extends JPanel implements ActionListener {
     	
     	sound.stop();
     	PlaySound soundGameOver = new PlaySound("gameover");
-		soundGameOver.play();
+		if(isSound) soundGameOver.play();
 		
 	    picture.setVisible(false);
 
@@ -464,15 +460,12 @@ public class Board extends JPanel implements ActionListener {
             timer.stop();
             isStarted = false;
             gameOver();
-            //statusbar.setText("game over");
         }
     }
     
     private void newBonus() {
     	curBonus.setRandomBonus();
-    	curBonus.setRandomX();
-    	curBonus.setRandomY();
-    	while(shapeAt(curBonus.x(), curBonus.y()) != Tetrominoes.NoShape) {
+    	while(!tryMove(curPiece, curBonus.x(), curBonus.y())) {
     		curBonus.setRandomX();
         	curBonus.setRandomY();
     	}
@@ -516,7 +509,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
-    {
+    {	
     	if (curBonus.getBonus() != Bonuses.NoBonus) {
         	// Verifie la collision entre la piece qui tombe et le bonus
         	for(int i = 0; i < 4; i++) {
@@ -526,7 +519,6 @@ public class Board extends JPanel implements ActionListener {
     	        	System.out.println(curBonus.getBonus());
     	        	picture.remove(labelBonus);
     	        	applyBonus(curBonus.getBonus());
-    	        	//bonuses.add(curBonus);
     	        	curBonus = new Bonus();
     	        }
             }
@@ -536,9 +528,7 @@ public class Board extends JPanel implements ActionListener {
                 for (int j = 0; j < BoardWidth; ++j) {
                 	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
                     if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
-                    	// TODO si LinkedList de bonus
-                    	// bonuses.add(curBonus);
-                    	curBonus = new Bonus();
+                    	 curBonus = new Bonus();
                     }
                 }
             }
@@ -566,6 +556,10 @@ public class Board extends JPanel implements ActionListener {
         repaint();
        
         return true;
+    }
+    
+    private void bonusCollision(){
+    	
     }
     
     private void setDifficulty(){
@@ -652,10 +646,10 @@ public class Board extends JPanel implements ActionListener {
 	    			}
 	    		}
 	    		scoreWorddle(word);
-	    		soundRight.play();
+	    		if(isSound)  soundRight.play();
 	    		System.out.println("Le mot est correct");
 	    	} else {
-	    		soundWrong.play();
+	    		if(isSound) soundWrong.play();
 	    		System.out.println("Le mot est incorrect");
 	    	}
 		}
@@ -688,7 +682,7 @@ public class Board extends JPanel implements ActionListener {
     private void removeLine(int y) {
     	boolean valid = validateWordAnagram(inputLetters);
     	if(valid && isLineFull(y)) {
-	    	soundRight.play();
+	    	if(isSound) soundRight.play();
     		++numLinesRemoved;
     		printLine.setText(Integer.toString(numLinesRemoved));
 			scoreAnagram(inputLetters);
@@ -705,7 +699,7 @@ public class Board extends JPanel implements ActionListener {
             }
     	}
     	else if(!valid && isLineFull(y)) {
-	    	soundWrong.play();
+	    	if(isSound) soundWrong.play();
             for (int k = y; k < BoardHeight - 1; ++k) {
             	for (int j = 0; j < BoardWidth; ++j) {
             		// Les lettres ne sont plus considerees comme deja cliquees
@@ -845,7 +839,19 @@ public class Board extends JPanel implements ActionListener {
     	}
     }
     
-    private void applyBonus(Bonuses bonusType) {
+    private void printBonus(){    
+		if(activeBonus == Bonuses.NoBonus || activeBonus == Bonuses.BonusScore || activeBonus ==  Bonuses.MalusScore ){
+			printBonus.setIcon(null);
+		}
+		else{
+	    	imgBonus = new ImageIcon(this.getClass().getResource("/pictures/bonus/"+activeBonus+".png"));
+			printBonus.setIcon(imgBonus);
+			printBonus.setBounds(440, 175, 30, 30); 
+		    picture.add(printBonus);
+		}
+    }
+    
+    private void applyBonus(Bonuses bonusType) {  	        
     	switch (bonusType) {
 			case NoBonus:
 				break;
@@ -873,6 +879,7 @@ public class Board extends JPanel implements ActionListener {
 				scoreBonus();
 				break;
 	    }
+    	printBonus();
     }
 
 	private void worddleBonus(int x, int y) {
@@ -949,10 +956,12 @@ public class Board extends JPanel implements ActionListener {
 	    	// Verifie si on clique dans l'espace du jeu
 	    	if(e.getX() >= BoardLeft && e.getX() <= (BoardLeft+GameWidth) && e.getY() >= BoardTop && e.getY() <= (BoardTop+GameHeight)) {
 	    		//System.out.println("Clic dans le bidule");
-	    		if(activeBonus == Bonuses.Worddle)
-	    			anagram(e.getX(), e.getY());
-	    		else
-	    			worddleBonus(e.getX(), e.getY());
+	    		if(activeBonus == Bonuses.Worddle) { 
+	    			worddleBonus(e.getX(), e.getY()); 
+	    			} 
+	    		else { 
+	    			anagram(e.getX(), e.getY()); 
+	    			}
 	    	}
         } 
 		@Override
@@ -1006,7 +1015,7 @@ public class Board extends JPanel implements ActionListener {
 	    			oneLineDown();
 	    			break;
 	    		case KeyEvent.VK_ENTER:
-	    			if(activeBonus == Bonuses.NoBonus) {
+	    			if(activeBonus == Bonuses.Worddle) {
 	    				System.out.println("Entrée en mode Worddle");
 	    				validateWordWorddle(inputLetters);
 	    			} else if(curLine != -1) {

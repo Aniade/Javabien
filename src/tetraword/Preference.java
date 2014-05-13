@@ -61,7 +61,7 @@ public class Preference extends JFrame {
 		level.setBounds(180, 0, 300, 100);
 		panel.add(level);
 
-		final ImageIcon select_debutant = new ImageIcon(this.getClass().getResource("pictures/select_debutant.png"));
+		final ImageIcon select_debutant = new ImageIcon(this.getClass().getResource("/pictures/select_debutant.png"));
         bt_debutant = new JButton(select_debutant);
         bt_debutant.setBounds(50, 80, 130, 44);
         bt_debutant.setBorder(null);
@@ -96,7 +96,7 @@ public class Preference extends JFrame {
         	}
         });  
         
-		ImageIcon select_amateur = new ImageIcon(this.getClass().getResource("pictures/select_amateur.png"));
+		ImageIcon select_amateur = new ImageIcon(this.getClass().getResource("/pictures/select_amateur.png"));
         bt_amateur = new JButton(select_amateur);
         bt_amateur.setBorder(null);
         bt_amateur.setBounds(200, 80, 130, 44);
@@ -131,7 +131,7 @@ public class Preference extends JFrame {
         	}
         });
         
-		ImageIcon select_expert = new ImageIcon(this.getClass().getResource("pictures/select_expert.png"));
+		ImageIcon select_expert = new ImageIcon(this.getClass().getResource("/pictures/select_expert.png"));
         bt_expert = new JButton(select_expert);
         bt_expert.setBorder(null);
         bt_expert.setBounds(350, 80, 130, 44);
@@ -209,8 +209,8 @@ public class Preference extends JFrame {
 		univers.setBounds(175, 120, 200, 100);
 		panel.add(univers);
 		
-		select_pirate = new ImageIcon(this.getClass().getResource("pictures/select_pirate.jpg"));
-		select_pirate_bw = new ImageIcon(this.getClass().getResource("pictures/select_pirate_bw.jpg"));
+		select_pirate = new ImageIcon(this.getClass().getResource("/pictures/select_pirate.jpg"));
+		select_pirate_bw = new ImageIcon(this.getClass().getResource("/pictures/select_pirate_bw.jpg"));
         bt_pirate = new JButton(select_pirate_bw);
         bt_pirate.setBounds(150, 195, 99, 99);
         bt_pirate.setFocusable(false);
@@ -246,8 +246,8 @@ public class Preference extends JFrame {
         	}
         });
         
-		select_kungfu_bw = new ImageIcon(this.getClass().getResource("pictures/select_kungfu_bw.jpg"));
-		select_kungfu = new ImageIcon(this.getClass().getResource("pictures/select_kungfu.jpg"));
+		select_kungfu_bw = new ImageIcon(this.getClass().getResource("/pictures/select_kungfu_bw.jpg"));
+		select_kungfu = new ImageIcon(this.getClass().getResource("/pictures/select_kungfu.jpg"));
         bt_kungfu = new JButton(select_kungfu_bw);
         bt_kungfu.setBounds(260, 195, 99, 99);
         bt_kungfu.setFocusable(false);
@@ -283,8 +283,8 @@ public class Preference extends JFrame {
         	}
         });
         
-        select_cowboy_bw = new ImageIcon(this.getClass().getResource("pictures/select_cowboy_bw.jpg"));
-        select_cowboy = new ImageIcon(this.getClass().getResource("pictures/select_cowboy.jpg"));
+        select_cowboy_bw = new ImageIcon(this.getClass().getResource("/pictures/select_cowboy_bw.jpg"));
+        select_cowboy = new ImageIcon(this.getClass().getResource("/pictures/select_cowboy.jpg"));
         bt_cowboy = new JButton(select_cowboy_bw);
         bt_cowboy.setBounds(260, 305, 99, 99);
         bt_cowboy.setFocusable(false);
@@ -320,8 +320,8 @@ public class Preference extends JFrame {
         	}
         });
         
-        select_batman_bw = new ImageIcon(this.getClass().getResource("pictures/select_batman_bw.jpg"));
-        select_batman = new ImageIcon(this.getClass().getResource("pictures/select_batman.jpg"));
+        select_batman_bw = new ImageIcon(this.getClass().getResource("/pictures/select_batman_bw.jpg"));
+        select_batman = new ImageIcon(this.getClass().getResource("/pictures/select_batman.jpg"));
         bt_batman = new JButton(select_batman_bw);
         bt_batman.setBounds(150, 305, 99, 99);
         bt_batman.setFocusable(false);
@@ -407,8 +407,8 @@ public class Preference extends JFrame {
 		dictionary.setBounds(165, 390, 200, 100);
 		panel.add(dictionary);
 		
-		select_francais = new ImageIcon(this.getClass().getResource("pictures/select_francais.jpg"));
-		select_francais_bw = new ImageIcon(this.getClass().getResource("pictures/select_francais_bw.jpg"));
+		select_francais = new ImageIcon(this.getClass().getResource("/pictures/select_francais.jpg"));
+		select_francais_bw = new ImageIcon(this.getClass().getResource("/pictures/select_francais_bw.jpg"));
         bt_francais = new JButton(select_francais_bw);
         bt_francais.setBounds(195, 460, 52, 33);
         bt_francais.setFocusable(false);
@@ -440,8 +440,8 @@ public class Preference extends JFrame {
         	}
         });
         
-		select_english_bw = new ImageIcon(this.getClass().getResource("pictures/select_english_bw.jpg"));
-		select_english = new ImageIcon(this.getClass().getResource("pictures/select_english.jpg"));
+		select_english_bw = new ImageIcon(this.getClass().getResource("/pictures/select_english_bw.jpg"));
+		select_english = new ImageIcon(this.getClass().getResource("/pictures/select_english.jpg"));
         bt_english = new JButton(select_english_bw);
         bt_english.setBounds(265, 460, 52, 33);
         bt_english.setFocusable(false);
@@ -501,7 +501,7 @@ public class Preference extends JFrame {
         
         //Enregistrer
         Button enregistrer = new Button("Enregistrer", blue, Color.white);
-        enregistrer.setBounds(200, 515, 110, 40);
+        enregistrer.setBounds(200, 545, 110, 40);
         panel.add(enregistrer);
         enregistrer.addMouseListener(new MouseAdapter() {
         	@Override
@@ -514,7 +514,7 @@ public class Preference extends JFrame {
         });
         
      	//Add background       
-        ii = new ImageIcon(this.getClass().getResource("pictures/bg_preference.jpg"));
+        ii = new ImageIcon(this.getClass().getResource("/pictures/bg_preference.jpg"));
         picture = new JLabel(new ImageIcon(ii.getImage()));
         add(picture);  
         

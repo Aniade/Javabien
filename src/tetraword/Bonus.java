@@ -53,6 +53,8 @@ public class Bonus {
         Bonuses[] values = Bonuses.values(); 
         setBonus(values[x]);
         setImage(values[x].toString());
+        setRandomX();
+        setRandomY();
     }
     
     public void setRandomX()

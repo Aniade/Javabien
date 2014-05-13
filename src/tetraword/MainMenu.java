@@ -1,6 +1,5 @@
 package tetraword;
 
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -28,24 +27,12 @@ public class MainMenu extends JFrame {
     	panel.setSize(400,500);
         getContentPane().add(panel);  
         
-        /*Couleur des bouton menu*/
-        final Color blue =new Color(46,49,146);
-        final Color black =new Color(0,0,0);
-        final Color white =new Color(255,255,255);
         
         //Bouton Nouvelle Partie
-        final MenuButton bt_start = new MenuButton("Nouvelle Partie", blue, black, 175, false);
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", 175);
         panel.add(bt_start);
         /*On affiche la page du jeu*/
         bt_start.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_start.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_start.SetForegroundandFill(black, false);
-        	}
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 System.out.println("New Game - button is working");
@@ -64,31 +51,13 @@ public class MainMenu extends JFrame {
         });
         
         //Bouton Continue
-        final MenuButton bt_continue = new MenuButton("Continue", blue, black, 237, false);
+        final MenuButton bt_continue = new MenuButton("Continue", 237);
         panel.add(bt_continue);
-        bt_continue.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_continue.SetForegroundandFill(black, false);
-        	}
-        });
-        
+
         //Bouton Aide
-        final MenuButton bt_help = new MenuButton("Aide", blue, black, 307, false);
+        final MenuButton bt_help = new MenuButton("Aide", 307);
         panel.add(bt_help);
         bt_help.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_help.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_help.SetForegroundandFill(black, false);
-        	}
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Help help = new Help();
@@ -101,17 +70,9 @@ public class MainMenu extends JFrame {
 
         
         //Bouton Préférences
-        final MenuButton bt_preference = new MenuButton("Préférences", blue, black, 373, false);
+        final MenuButton bt_preference = new MenuButton("Préférences", 373);
         panel.add(bt_preference);
         bt_preference.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_preference.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_preference.SetForegroundandFill(black, false);
-        	}
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Preference preference = new Preference();
@@ -123,18 +84,10 @@ public class MainMenu extends JFrame {
         });
         
         //Bouton Quitter
-        final MenuButton bt_exit = new MenuButton("Quitter", blue, black, 447, false);
+        final MenuButton bt_exit = new MenuButton("Quitter", 447);
         panel.add(bt_exit);
         /*On quitte le jeu*/
         bt_exit.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseEntered(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(white, true);
-        	}
-        	@Override
-        	public void mouseExited(MouseEvent e) {
-        		bt_exit.SetForegroundandFill(black, false);
-        	}
         	@Override
         	public void mouseClicked(MouseEvent e) {
         		System.exit(0);

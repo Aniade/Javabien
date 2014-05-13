@@ -15,8 +15,4 @@ public class Button extends JButton{
         setFocusable(false);
 	}
 
-	public void SetForegroundandFill(Color foreground, boolean fill){
-		setContentAreaFilled(fill);
-		setForeground(foreground);
-	}
 }
