@@ -65,7 +65,7 @@ public class Board extends JPanel implements ActionListener {
     int level = 1; // niveau
     
     // Gestion des Tetrominoes                        
-    Tetrominoes[] board; // tableau contenant toutes formes présentes sur le plateau en fonction des coordonnées
+    Tetrominoes[] board; // tableau contenant toutes formes presentes sur le plateau en fonction des coordonnees
     int[][][] bricks; // tableau qui contient l'id, la lettre et le clic pour chaque brique selon ses coordonnees dans le board
     int lastShapeId = -4; // dernier id attribue a une brique
     // Tetrominoes qui tombe
@@ -714,7 +714,7 @@ public class Board extends JPanel implements ActionListener {
         if (score < 0) {
         	score = 0;
         } else if(score >= 1000) {
-        	System.out.println("FELICITATIONS ! Vous avez gagné un Mars !");
+        	System.out.println("FELICITATIONS ! Vous avez gagne un Mars !");
         	endGame();
         }
         printScore.setText(Integer.toString(score)); 	
@@ -857,7 +857,7 @@ public class Board extends JPanel implements ActionListener {
 	    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);  	
 	    	    	picture.add(printWord);
 				} else {
-					System.err.println("La lettre a déjà été utilisée pour ce mot");
+					System.err.println("La lettre a deja ete utilisee pour ce mot");
 				}
 			} else {
 				// Nouveau mot
@@ -1096,11 +1096,11 @@ public class Board extends JPanel implements ActionListener {
 	    			break;
 	    		case KeyEvent.VK_ENTER: 
 	    			if(activeBonus == Bonuses.Worddle) { 
-	    				//System.out.println("Entrée en mode Worddle"); 
+	    				//System.out.println("Entree en mode Worddle"); 
 	    				validateWordWorddle(inputLetters); 
 	    			} 
 	    			else if(curLine != -1) { 
-	    				//System.out.println("Entrée en mode Anagramme"); 
+	    				//System.out.println("Entree en mode Anagramme"); 
 	    				removeLine(curLine); 
 	    			} 
 	    			break;

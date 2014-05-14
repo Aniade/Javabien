@@ -26,7 +26,7 @@ public class Shape {
     }
     
     public void setShape(Tetrominoes shape) {
-    	// Le tableau de coordonnées contient les coordonnées possibles des tetrominos
+    	// Le tableau de coordonnees contient les coordonnees possibles des tetrominos
     	coordsTable = new int[][][] {
             { { 0, 0 },   { 0, 0 },   { 0, 0 },   { 0, 0 } },
             { { 0, -1 },  { 0, 0 },   { -1, 0 },  { -1, 1 } },

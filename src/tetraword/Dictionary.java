@@ -12,7 +12,7 @@ import java.util.TreeSet;
 
 public class Dictionary {
 	private String[] wordList;
-	//Tableau d'entier qui stocke la position à laquelle la première lettre du word change
+	//Tableau d'entier qui stocke la position a laquelle la première lettre du word change
 	private int[] position = new int[27];
 	/*Collection pour pouvoir trier les words*/
 	private TreeSet<String> tmpList = new TreeSet<String>();
