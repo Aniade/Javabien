@@ -23,10 +23,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import design.MenuButton;
-import design.PrintText;
 import tetraword.Bonus.Bonuses;
 import tetraword.Shape.Tetrominoes;
+import design.MenuButton;
+import design.PrintText;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {

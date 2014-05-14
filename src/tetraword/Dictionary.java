@@ -12,7 +12,7 @@ import java.util.TreeSet;
 
 public class Dictionary {
 	private String[] wordList;
-	//Tableau d'entier qui stocke la position a laquelle la première lettre du word change
+	//Tableau d'entier qui stocke la position a laquelle la premiere lettre du word change
 	private int[] position = new int[27];
 	/*Collection pour pouvoir trier les words*/
 	private TreeSet<String> tmpList = new TreeSet<String>();
@@ -26,7 +26,7 @@ public class Dictionary {
 	public Dictionary() {
     	Properties options = new Properties(); 
     	
-    	// Création d'une instance de File pour le fichier de config
+    	// Creation d'une instance de File pour le fichier de config
     	File fichierConfig = new File("src/conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
@@ -37,7 +37,7 @@ public class Dictionary {
     		System.out.println("Echec chargement");
     	}
     	
-    	/* Récupérer une propriété d'un fichier de configurations */
+    	/* Recuperer une propriete d'un fichier de configurations */
    	 	String configDico = options.getProperty("Dictionary");
    	 	
     	switch (configDico)
@@ -84,14 +84,14 @@ public class Dictionary {
         findPosition();
         
 		} 
-	//Si le fichier texte n'est pas trouvé
+	//Si le fichier texte n'est pas trouve
     catch (IOException e) {
     	System.out.println("le fichier : "+ file +" n'a pas ete trouve");
     }
 
 }
 
-//Méthode qui enlève les accents
+//Methode qui enleve les accents
 public String replaceString(String word){
 		word=word.replace('à','a');
 		word=word.replace('â','a');
@@ -113,7 +113,7 @@ public String replaceString(String word){
 	
 	}
 
-/* Accelere la recherche de mot dans le tableau en trouvant la position de début de chaque lettre 
+/* Accelere la recherche de mot dans le tableau en trouvant la position de debut de chaque lettre 
 */
 public void findPosition(){
 	char temp='a';
@@ -125,7 +125,7 @@ public void findPosition(){
 		 	if(wordList[i].charAt(0)==temp)
 		 		{
 		 		position[temp2]=i;
-		 		//On incrémente pour passer a la lettre suivante
+		 		//On incremente pour passer a la lettre suivante
 		 		temp++;
 	 			temp2++; 	 			
 			 	}

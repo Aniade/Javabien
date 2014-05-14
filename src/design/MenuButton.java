@@ -19,10 +19,10 @@ import tetraword.MainMenu;
 @SuppressWarnings("serial")
 public class MenuButton extends Button{
     /*Couleur des bouton menu*/
-    private static Color blue =new Color(46,49,146);
-    private static Color black =new Color(0,0,0);
-    private static Color white =new Color(255,255,255);
-    private static Color whiteOpacity =new Color(255,255,255,170);
+    private static Color blue = new Color(46,49,146);
+    private static Color black = new Color(0,0,0);
+    private static Color white = new Color(255,255,255);
+    private static Color whiteOpacity = new Color(255,255,255,170);
     
 	public MenuButton(String name, int posY) {
 		super(name, whiteOpacity, black);
