@@ -8,8 +8,15 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.TreeSet;
 
-
-
+/**
+ * 
+ * Gestion des mots contient des méthodes permettant de vérifier 
+ * l'existence d’un mot et de trouver le meilleur anagramme à partir 
+ * de deux fichiers texte (un contenant les mots du dictionnaire français 
+ * et l’autre ceux du dictionnaire anglais). Cette classe intervient 
+ * dans le mode anagramme et le mode worddle.
+ *
+ */
 public class Dictionary {
 	private String[] wordList;
 	//Tableau d'entier qui stocke la position a laquelle la premiere lettre du word change

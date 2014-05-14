@@ -4,6 +4,12 @@ import java.util.Random;
 
 import javax.swing.ImageIcon;
 
+/**
+ * 
+ * Les modificateurs possèdent des coordonnées, une image et un type qui est 
+ * déterminé aléatoirement. Les bonus apparaissent aléatoirement sur le plateau.
+ *
+ */
 public class Bonus {
 	
 	// Tetrominoes liste les 7 formes possibles des tetrominos + une forme vide appelee NoShape

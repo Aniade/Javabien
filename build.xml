@@ -4,6 +4,14 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.7"/>
     <property name="source" value="1.7"/>
+	
+	<property name="name" value="Tetraword" />
+	<property name="src.dir" value="src"/>
+	<property name="build.dir" value="build"/>
+	<property name="build.classes" value="${build.dir}/classes"/>
+	<property name="build.javadoc" value="${build.dir}/javadoc"/>
+	<property name="build.jar" value="${build.dir}/${name}.jar"/>
+		
     <path id="javabien.classpath">
         <pathelement location="bin"/>
     </path>
@@ -83,5 +91,25 @@
 				<attribute name="Sealed" value="false"/>
 			</section>
 		</manifest>
+		
+		<javadoc
+		           destdir="docs"
+		           author="true"
+		           version="true"
+		           use="true"
+		           windowtitle="Test API">
+
+		    <packageset dir="src" defaultexcludes="yes">
+		    </packageset>
+
+		    <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+		    <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>
+		    <tag name="todo" scope="all" description="To do:"/>
+		    <group title="Tetraword Packages" packages="tetraword"/>
+		    <group title="Frames Packages" packages="frames"/>
+		    <group title="Design Packages" packages="design"/>
+		    <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="C:\tmp"/>
+		    <link href="http://docs.oracle.com/javase/7/docs/api/"/>
+		  </javadoc>
 		
 </project>

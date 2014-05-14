@@ -2,6 +2,14 @@ package tetraword;
 
 import java.util.Random;
 
+/**
+ * 
+ * Chaque Shape est composée de quatre briques. 
+ * Les briques possèdent des coordonnées, un id et une lettre. 
+ * La lettre est déterminée aléatoirement en prenant en compte la
+ * fréquence d'apparition des lettres dans la langue française.
+ *
+ */
 public class Brick {
 	public int[] brickCoords;
 	public int brickId;
@@ -32,7 +40,7 @@ public class Brick {
 						'F', 'H', 'V',
 						'J', 'Q',
 						'K', 'W', 'X', 'Y', 'Z'};
-		double[] probabilities = {15, 9, 8, 6, 6, 6, 6, 6, 6, 5,
+		int[] probabilities = {15, 9, 8, 6, 6, 6, 6, 6, 6, 5,
 								  3, 3, 2,
 								  2, 2, 2,
 								  2, 2, 2,

@@ -3,7 +3,12 @@ package tetraword;
 import java.net.URL;
 import java.applet.Applet;
 import java.applet.AudioClip;
- 
+
+/**
+ * 
+ * Gestion de la musique (Play, Stop et Loop)
+ *
+ */
 public class PlaySound {
 	private URL url;
 	private AudioClip sound;

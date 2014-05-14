@@ -15,7 +15,13 @@ import javax.swing.SwingUtilities;
 import frames.GameFrame;
 import frames.MainMenu;
 
-
+/**
+ * 
+ * Hérite de Button, classe permettant de créer les boutons 
+ * qui réapparaissent plusieurs fois dans les menu 
+ * (Nouvelle partie, Menu principal, Quitter …)
+ *
+ */
 @SuppressWarnings("serial")
 public class MenuButton extends Button{
     /*Couleur des bouton menu*/

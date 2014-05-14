@@ -3,6 +3,12 @@ package design;
 import java.awt.Color;
 import javax.swing.JButton;
 
+/**
+ * 
+ * Hérite de JButton, permet de créer un bouton avec son label, 
+ * sa couleur et la couleur du texte directement.
+ *
+ */
 @SuppressWarnings("serial")
 public class Button extends JButton{ 
 

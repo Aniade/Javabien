@@ -12,6 +12,11 @@ import javax.swing.JPanel;
 
 import design.MenuButton;
 
+/**
+ * 
+ * Affiche le menu principal
+ *
+ */
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {
 
@@ -29,7 +34,7 @@ public class MainMenu extends JFrame {
         
         
         //Bouton Nouvelle Partie
-        final MenuButton bt_start = new MenuButton("Nouvelle Partie", 175);
+        final MenuButton bt_start = new MenuButton("Nouvelle Partie", 200);
         panel.add(bt_start);
         /*On affiche la page du jeu*/
         bt_start.addMouseListener(new MouseAdapter() {
@@ -40,10 +45,9 @@ public class MainMenu extends JFrame {
 				try {
 					game = new GameFrame();
 				} catch (UnsupportedAudioFileException | IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au meme endroit que le menu
                 game.setLocationRelativeTo(null);
                 game.setVisible(true);
                 dispose(); 
@@ -51,17 +55,17 @@ public class MainMenu extends JFrame {
         });
         
         //Bouton Continue
-        final MenuButton bt_continue = new MenuButton("Continue", 237);
-        panel.add(bt_continue);
+       /* final MenuButton bt_continue = new MenuButton("Continue", 237);
+        panel.add(bt_continue);*/
 
         //Bouton Aide
-        final MenuButton bt_help = new MenuButton("Aide", 307);
+        final MenuButton bt_help = new MenuButton("Aide", 270);
         panel.add(bt_help);
         bt_help.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Help help = new Help();
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au meme endroit que le menu
                 help.setLocationRelativeTo(null);
                 help.setVisible(true);
                 dispose();  
@@ -70,13 +74,13 @@ public class MainMenu extends JFrame {
 
         
         //Bouton Préférences
-        final MenuButton bt_preference = new MenuButton("Préférences", 373);
+        final MenuButton bt_preference = new MenuButton("Préférences", 340);
         panel.add(bt_preference);
         bt_preference.addMouseListener(new MouseAdapter() {
         	@Override
         	public void mouseClicked(MouseEvent e) {
                 Preference preference = new Preference();
-                //Ouvrir au même endroit que le menu
+                //Ouvrir au meme endroit que le menu
                 preference.setLocationRelativeTo(null);
                 preference.setVisible(true);
                 dispose();  
@@ -84,7 +88,7 @@ public class MainMenu extends JFrame {
         });
         
         //Bouton Quitter
-        final MenuButton bt_exit = new MenuButton("Quitter", 447);
+        final MenuButton bt_exit = new MenuButton("Quitter", 410);
         panel.add(bt_exit);
         /*On quitte le jeu*/
         bt_exit.addMouseListener(new MouseAdapter() {

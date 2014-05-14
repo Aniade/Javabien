@@ -21,6 +21,14 @@ import javax.swing.border.BevelBorder;
 
 import design.Button;
 
+/**
+ * 
+ * Affiche le menu de préférence, cette classe contient les méthodes 
+ * pour que l’utilisateur puisse choisir le niveau de difficulté, 
+ * l’univers dans lequel il souhaite jouer et de choisir la langue 
+ * (anglais ou français)
+ *
+ */
 @SuppressWarnings("serial")
 public class Preference extends JFrame {
 	private JPanel panel;

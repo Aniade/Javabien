@@ -3,6 +3,13 @@ package tetraword;
 import java.util.Random;
 import java.lang.Math;
 
+/**
+ * 
+ * Les Shape sont formées de quatre Bricks. 
+ * Elles sont basées sur les 7 pièces du tetris classique.
+ * Leur forme est déterminée aléatoirement.
+ *
+ */
 public class Shape {
 
 	// Tetrominoes liste les 7 formes possibles des tetrominos + une forme vide appelee NoShape

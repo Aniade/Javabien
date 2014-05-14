@@ -4,6 +4,11 @@ import javax.swing.JFrame;
 
 import frames.MainMenu;
 
+/**
+ * 
+ * Classe principale
+ *
+ */
 @SuppressWarnings("serial")
 public class Tetraword extends JFrame{
 	

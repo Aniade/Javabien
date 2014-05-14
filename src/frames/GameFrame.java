@@ -7,6 +7,11 @@ import javax.swing.JFrame;
 
 import tetraword.Board;
 
+/**
+ * 
+ *  Affiche le jeu
+ *
+ */
 @SuppressWarnings("serial")
 public class GameFrame extends JFrame {
 

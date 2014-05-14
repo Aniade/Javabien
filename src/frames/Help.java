@@ -10,6 +10,11 @@ import javax.swing.JPanel;
 
 import design.MenuButton;
 
+/**
+ * 
+ * Affiche le menu d’aide
+ *
+ */
 @SuppressWarnings("serial")
 public class Help extends JFrame {
 	private JPanel panel;

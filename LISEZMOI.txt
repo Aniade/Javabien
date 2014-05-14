@@ -1,0 +1,31 @@
+COMMENT JOUER A NOTRE SUPER TETRAWORD !
+
+1. Les Commandes
+? : Descend la pièce d’une ligne
+? : Déplace la pièce vers la gauche
+? : Déplace la pièce vers la droite
+? : Rotation de la pièce
+Espace : Descente rapide de la pièce
+P : Met le jeu en pause
+Entrée : Valide un mot
+
+2. Les Bonus
+Lettres ABC : Worddle
+Le soleil :Bonus de point
+L'éclair : Malus de point
+La fusée : Accélération de la pièce
+L'escargot : Ralentissement de la pièce
+
+3. La Politique de Score
+Pièce qui tombe : 5 points
+Utilisation descente rapide : 5 points
+Bonus de score : entre + 10 et + 50 points
+Malus de score : entre - 10 et - 50 points
+Worddle : Privilégie les mots longs avec des lettres rares (Basé sur le comptage de point au scrabble) 
+Anagramme : (Le nombre de lettre saisie par l'utilisateur / le nombre de lettre du meilleur anagramme)*30
+Pour le mode Anagramme, une ligne est détruite uniquement si l'on a proposé un mot comportant au moins N% du nombre de lettres du meilleur anagramme :
+Débutant : 30% du nombre de lettres du meilleur anagramme
+Amateur : 50% du nombre de lettres du meilleur anagramme
+Expert : 70% du nombre de lettres du meilleur anagramme
+
+

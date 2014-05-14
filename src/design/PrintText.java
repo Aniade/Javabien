@@ -4,6 +4,12 @@ import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JLabel;
 
+/**
+ * 
+ * Hérite de JLabel, permet de pouvoir afficher du texte avec son label, 
+ * sa position, sa police et sa couleur.
+ *
+ */
 @SuppressWarnings("serial")
 public class PrintText  extends JLabel {
 

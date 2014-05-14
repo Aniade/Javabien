@@ -29,6 +29,11 @@ import design.MenuButton;
 import design.PrintText;
 import frames.GameFrame;
 
+/**
+ * 
+ * Création du plateau, des pièces et des bonus.
+ *
+ */
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {
 	
@@ -93,7 +98,7 @@ public class Board extends JPanel implements ActionListener {
 	int[][][] curWorddle; // Mot actuellement saisi en mode worddle
 						  // (0,0) = x, (1,0) = y, (2,_) = lettre, validation
 	int scoreWorddle = 0; // Score a ajouter a la fin du mode worddle
-
+	
 	public Board(GameFrame parent) throws UnsupportedAudioFileException, IOException {
        setFocusable(true);
        
@@ -193,6 +198,9 @@ public class Board extends JPanel implements ActionListener {
        clearBoard();
     }
     
+	/**
+	 * Verifie si la piece courrate a fini de tomber
+	 */
     // Verifie si la piece a fini de tomber
     public void actionPerformed(ActionEvent e) {
         if (isFallingFinished) {
@@ -203,12 +211,66 @@ public class Board extends JPanel implements ActionListener {
         }
     }
     
+    /**
+     * Largeur du plateau de jeu
+     * 
+     * @return La largeur du plateau en pixels
+     */
     int squareWidth() { return (int) GameWidth / BoardWidth; }
+    
+    /**
+     * Hauteur du plateau de jeu
+     * 
+     * @return La hauteur du plateau en pixels
+     */
     int squareHeight() { return (int) GameHeight / BoardHeight; }
+    
+    /**
+     * Piece sur le plateau
+     * @param x
+     * 	Coordonnee en x de la forme
+     * @param y
+     * 	Coordonne en y de la forme
+     * @return La forme
+     */
     Tetrominoes shapeAt(int x, int y) { return board[(y * BoardWidth) + x]; }
+    
+    /**
+     * Id sur le plateau
+     * @param x
+     * 	Coordonnee en x
+     * @param y
+     * 	Coordonnee en y
+     * @return L'identifiant
+     */
     int idAt(int x, int y) { return bricks[x][y][0]; }
+    
+    /**
+     * Lettre sur le plateau
+     * @param x
+     * 	Coordonnee en x
+     * @param y
+     * 	Coordonnee en y
+     * @return La letter
+     */
     char letterAt(int x, int y){ return (char)bricks[x][y][1]; }
+    
+    /**
+     * La présence de la pièce dans un mot
+     * @param x
+     * Coordonnee en x
+     * @param y
+     * 	Coordonnee en y
+     * @return 0 si la piece n'a jamais servi, 1 sinon
+     */
     int clickAt(int x, int y) { return bricks[x][y][2]; }
+    
+    /**
+     * Lettres présentes sur une ligne
+     * @param y
+     *      * 	Numéro de la ligne
+     * @return Les lettres sur la ligne
+     */
     String lettersAt(int y) {
     	StringBuilder sb = new StringBuilder();
     	for(int i = 0; i < BoardWidth; i++) {
@@ -216,7 +278,10 @@ public class Board extends JPanel implements ActionListener {
     	}
 		return sb.toString();
     }
-
+    
+    /**
+     * Lance le jeu
+     */
     public void start()
     {
         if (isPaused)
@@ -230,7 +295,10 @@ public class Board extends JPanel implements ActionListener {
         newPiece();
         timer.start();
     }
-
+    
+    /**
+     * Met le jeu en pause
+     */
     private void pause()
     {
         if (!isStarted)
@@ -250,6 +318,9 @@ public class Board extends JPanel implements ActionListener {
         repaint();
     }
     
+    /**
+     * Affiche l'interface de la pause
+     */
 	//Menu pause
     public void breakMenu() {
     	sound.stop();
@@ -278,6 +349,9 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonClose(pause, 440);
     }
     
+    /**
+     * Affiche l'interface du game over
+     */
     //Menu game Over
     public void gameOver() {
     	clearBoard();
@@ -299,6 +373,9 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonClose(gameover, 440);
     }
     
+    /**
+     * Affiche l'interface lorsque l'utilisateur gagne
+     */
 	//Menu jeu termine
     public void endGame() {
     	clearBoard();    	
@@ -324,6 +401,9 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonClose(endgame, 440);
     }
     
+    /**
+     * Recupère les informations relatives à l'interface
+     */
     public void buildInterface(){
     	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
@@ -395,6 +475,9 @@ public class Board extends JPanel implements ActionListener {
         printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.black, picture);    
     }
     
+    /**
+     * Affiche le bonus activé
+     */
     private void printBonus(){    
 		if(activeBonus == Bonuses.NoBonus || activeBonus == Bonuses.BonusScore || activeBonus ==  Bonuses.MalusScore ){
 			printBonus.setIcon(null);
@@ -406,7 +489,10 @@ public class Board extends JPanel implements ActionListener {
 		    picture.add(printBonus);
 		}
 	}
-
+    
+    /**
+     * Affiche les objets présents sur le plateau
+     */
 	// Dessine tous les objets
     @Override
     public void paint(Graphics g) {   	
@@ -418,7 +504,7 @@ public class Board extends JPanel implements ActionListener {
                     Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
                     String letter = Character.toString(letterAt(j, BoardHeight - i - 1));
                     if (shape != Tetrominoes.NoShape)
-                        drawSquare(g, BoardLeft + j * squareWidth(),
+                        drawBrick(g, BoardLeft + j * squareWidth(),
                                    BoardTop + i * squareHeight(),
                                    shape, letter);
                 }
@@ -429,7 +515,7 @@ public class Board extends JPanel implements ActionListener {
                 for (int i = 0; i < 4; ++i) {
                     int x = curX + curPiece.x(i);
                     int y = curY - curPiece.y(i);
-                    drawSquare(g, BoardLeft + x * squareWidth(),
+                    drawBrick(g, BoardLeft + x * squareWidth(),
                                BoardTop + (BoardHeight - y - 1) * squareHeight(),
                                curPiece.getShape(), Character.toString(curPiece.getLetter(i)));
                 }
@@ -445,16 +531,20 @@ public class Board extends JPanel implements ActionListener {
             }
     	}
     }
-
-    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
-		Image image = (curBonus.getImage()).getImage();
-		if(image != null) // Si l'image existe, ...
-			g.drawImage(image, x, y, this); // ... on la dessine
-		else 
-			System.err.println("Impossible de charger l'image du bonus");
-	}
-
-	private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
+    
+    /**
+     * Dessine les briques sur le plateau
+     * @param g
+     * @param x
+     * Coordonnée en x
+     * @param y
+     * Coordonnée en y
+     * @param shape
+     * Forme de la pièce
+     * @param letter
+     * Lettre de la brique
+     */
+    private void drawBrick(Graphics g, int x, int y, Tetrominoes shape, String letter)
 	{
 	    //System.out.println("draw square");
 		
@@ -486,7 +576,35 @@ public class Board extends JPanel implements ActionListener {
 		g.drawString(letter, x + 11, y + 19);
 	
 	}
-
+    
+    /**
+     * Dessine le bonus
+     * @param g
+     * @param x
+     * Coordonnée en x
+     * @param y
+     * Coordonnée en y
+     * @param bonus
+     * Type de bonus
+     */
+	private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
+		Image image = (curBonus.getImage()).getImage();
+		if(image != null) // Si l'image existe, ...
+			g.drawImage(image, x, y, this); // ... on la dessine
+		else 
+			System.err.println("Impossible de charger l'image du bonus");
+	}
+	
+	/**
+	 * Vérifie si la pièce peut se déplacer à un endroit donné
+	 * @param newPiece
+	 * Piece à bouger
+	 * @param newX
+	 * Coordoonée x souhaitée
+	 * @param newY
+	 * Coordonnée y souhaitée
+	 * @return True si la pièce peut se déplacer, false sinon
+	 */
 	private boolean tryMove(Shape newPiece, int newX, int newY)
 	{  	
 		for (int i = 0; i < 4; ++i) {
@@ -508,7 +626,10 @@ public class Board extends JPanel implements ActionListener {
 	
 	    return true;
 	}
-
+	
+	/**
+	 * La piece descend jusqu'à rencontrer un obstacle
+	 */
 	private void dropDown() {
         int newY = curY;
         while (newY > 0) {
@@ -520,12 +641,22 @@ public class Board extends JPanel implements ActionListener {
 
         pieceDropped();
     }
-
+	
+	/**
+	 * La pièce descend d'une ligne
+	 */
     private void oneLineDown() {        
     	if (!tryMove(curPiece, curX, curY - 1))
             pieceDropped();
     }
-
+    
+    /**
+     * Une colonne descend jusqu'à rencontrer un obstacle
+     * @param x
+     * Coordoonée en x
+     * @param y
+     * Coordonnée en y
+     */
     private void fallColumn(int x, int y) {
 		// Parcourir toutes les pieces
 	    for (int i = y; i < BoardHeight - 1; ++i) {
@@ -536,7 +667,10 @@ public class Board extends JPanel implements ActionListener {
 				bricks[x][i][2] = clickAt(x, i + 1);
 	    }
 	}
-
+    
+    /**
+     * La pièce rencontre un obstacle et termine sa chute
+     */
 	private void pieceDropped() {
 	    for (int i = 0; i < 4; ++i) {
 	        int x = curX + curPiece.x(i);
@@ -553,7 +687,10 @@ public class Board extends JPanel implements ActionListener {
 	    	addPoints(5);
 	    }
 	}
-
+	
+	/**
+	 * Vérifie la collision entre le bonus affiché et la pièce qui tombe
+	 */
 	private void bonusCollision(){    	
 		if (curBonus.getBonus() != Bonuses.NoBonus) {
 	    	// Verifie la collision entre la piece qui tombe et le bonus
@@ -581,13 +718,19 @@ public class Board extends JPanel implements ActionListener {
 	        }
 	    } else {
 	    	Random r = new Random();
-	    	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
+	    	int x = Math.abs(r.nextInt()) % 30;
 	    	if(x == 1 && activeBonus == Bonuses.NoBonus) {
 	    		newBonus();
 	    	}
 	    }
 	}
-
+	
+	/**
+	 * Vérifie si une ligne est pleine
+	 * @param y
+	 * Coordonnée en y
+	 * @return True si la ligne est pleine, false sinon
+	 */
 	private boolean isLineFull(int y) {
 		boolean lineIsFull = true;
 		
@@ -602,7 +745,12 @@ public class Board extends JPanel implements ActionListener {
 	    
 	    return lineIsFull;
 	}
-
+	
+	/**
+	 * Supprime une ligne
+	 * @param y
+	 * Numéro de la ligne (coordonnée en y)
+	 */
 	private void removeLine(int y) {
 		boolean valid = validateWordAnagram(inputLetters);
 		if(valid && isLineFull(y)) {
@@ -907,6 +1055,10 @@ public class Board extends JPanel implements ActionListener {
 			//System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
 			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
 			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
+			if(inputLetters.length() == bestAnagram.length()) {
+				System.out.println("Meilleur anagramme trouvé : +10 pts");
+				addPoints(10);
+			}
 		}
 	}
 
