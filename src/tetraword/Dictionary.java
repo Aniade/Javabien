@@ -27,7 +27,7 @@ public class Dictionary {
     	Properties options = new Properties(); 
     	
     	// Création d'une instance de File pour le fichier de config
-    	File fichierConfig = new File("conf/conf.properties"); 
+    	File fichierConfig = new File("src/conf/conf.properties"); 
 
     	//Chargement du fichier de configuration
     	try {
@@ -43,13 +43,13 @@ public class Dictionary {
     	switch (configDico)
  	   	{
  	   	  case "francais":
- 	   		file = "dictionnaire/dictionnaire.txt";
+ 	   		file = "src/dictionnaire/dictionnaire.txt";
  	   	    break;
  	   	  case "anglais":
- 	   		file = "dictionnaire/dictionary.txt";
+ 	   		file = "/dictionnaire/dictionary.txt";
  	   	    break; 
  	   	  default:
- 	   		file = "dictionnaire/dictionnaire.txt";
+ 	   		file = "src/dictionnaire/dictionnaire.txt";
  	   			
  	   	}
     	
@@ -255,10 +255,7 @@ public String bestAnagram(char tab[], int size){
 							else{
 								i++;	
 							}		
-						}						
-						/*
-						triList[cpt] = word;*/
-						//System.out.println(word); 					
+						}					
 					}
 					cpt++;
 				}
@@ -269,23 +266,4 @@ public String bestAnagram(char tab[], int size){
 
 	return s;
 }
-
-
-
-public static void main(String[] args){	
-	Dictionary dictionary = new Dictionary();
-	boolean valide;
-	String wordValide = "PETASSE";
-	wordValide = wordValide.toLowerCase();
-	//dictionary.allAnagrams(wordValide);
-	valide = dictionary.validateWord(wordValide);
-	System.out.println(wordValide + " et le resultat est : "+valide); 
-	String s="aaeirstvxz";
-	char tab[] = s.toCharArray(); 
-	String st = dictionary.bestAnagram(tab,s.length());
-	System.out.println(st); 
-
-	
-}
-
 }

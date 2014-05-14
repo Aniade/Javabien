@@ -33,7 +33,7 @@ public class Board extends JPanel implements ActionListener {
 	
 	// Interface
 	private ImageIcon ii, imgBonus, btSound, btMute, btBreak;
-    private JLabel picture, bt_sound, bt_break, pause, gameover;
+    private JLabel picture, bt_sound, bt_break, pause, gameover, endgame;
     private JLabel printBonus = new JLabel(); 
     private JLabel printWord = new JLabel(); 
     private JLabel labelBonus = new JLabel();
@@ -60,9 +60,9 @@ public class Board extends JPanel implements ActionListener {
     boolean isStarted = false; // le jeu est-il actif
     boolean isPaused = false; // le jeu est-il en pause
     private boolean isSound = true; // le son est-il active ?
-    int speed; // vitesse de chute des pieces
-    int score; // score
-    int level; // niveau
+    int speed = 1000; // vitesse de chute des pieces
+    int score = 0; // score
+    int level = 1; // niveau
     
     // Gestion des Tetrominoes                        
     Tetrominoes[] board; // tableau contenant toutes formes présentes sur le plateau en fonction des coordonnées
@@ -78,22 +78,24 @@ public class Board extends JPanel implements ActionListener {
     String inputLetters = ""; // lettres saisies au clic par l'utilisateur
     String bestAnagram = ""; // meilleur anagramme possible sur la ligne actuelle
     // Anagramme
-    int curLine; // ligne sur laquelle l'utilisateur clique
+    int curLine = -1; // ligne sur laquelle l'utilisateur clique
     int difficulty = 30; // difficulte des anagrammes
     int numLinesRemoved = 0; // nombre de lignes supprimees avec le mode anagramme
     
     // Bonus
 	private Timer timerBonus;
-	private int elapsedTime; // Temps ecoule depuis le debut du timer
+	private int elapsedTime = 0; // Temps ecoule depuis le debut du timer
 	private Bonus curBonus; // Bonus actuellement affiche sur le plateau
 	private Bonuses activeBonus; // Bonus en cours
 	// Worddle
 	private int[] previousCoords; // Coordonnees de la derniere lettre cliquee en mode worddle
 	int[][][] curWorddle; // Mot actuellement saisi en mode worddle
 						  // (0,0) = x, (1,0) = y, (2,_) = lettre, validation
+	int scoreWorddle = 0; // Score a ajouter a la fin du mode worddle
 
 	public Board(GameFrame parent) throws UnsupportedAudioFileException, IOException {
        setFocusable(true);
+       
        // Chargement de l'interface graphique
        buildInterface();
 
@@ -101,22 +103,21 @@ public class Board extends JPanel implements ActionListener {
        sound = new PlaySound(configUniv);
        sound.loop();
        
-       // Adapation de la difficulte en fonction de preferences de l'utilisateur
-       setDifficulty();
-       curPiece = new Shape();
-       curBonus = new Bonus();
-       curLine = -1;
-       speed = 900;
+       // Timer pour la chute des pieces
        timer = new Timer(speed, this); // vitesse de descente des pieces
        timer.start();
-
-       board = new Tetrominoes[BoardWidth * BoardHeight];
-       bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click
-       previousCoords = new int[2];
-       score = 0;
-       level = 1;
-       elapsedTime = 0;
-       timerBonus = new Timer(100, new ActionListener() {
+       
+       // Gestion des tetrominoes
+       // Tableau de sauvegarde des Tetrominoes
+       board = new Tetrominoes[BoardWidth * BoardHeight];   
+       // Tableau de sauvegarde des briques
+       bricks = new int[BoardWidth][BoardHeight][3]; // 0 = id; 1 = lettre; 2 = click   
+       // Piece qui tombe
+       curPiece = new Shape();
+       
+       // Bonus
+       curBonus = new Bonus();
+       timerBonus = new Timer(speed, new ActionListener() {
     	   @Override
     	   public void actionPerformed(ActionEvent ae) {
     		   elapsedTime += timerBonus.getDelay();
@@ -138,7 +139,9 @@ public class Board extends JPanel implements ActionListener {
 	    			if (elapsedTime >= 30000) {
 	    	   			System.out.println("Worddle off");
 	        			System.out.println("Suppression des briques Worddle");
-	        			// TODO scoreWorddle(inputLetters);
+	        			addPoints(scoreWorddle);
+	        			System.out.println("Score total du worddle : " + scoreWorddle);
+	        			scoreWorddle = 0;
 	    				removeBricksWorddle();
 	        			activeBonus = Bonuses.NoBonus;
 	    				timerBonus.stop();
@@ -178,13 +181,15 @@ public class Board extends JPanel implements ActionListener {
     	   }
        });
        activeBonus = Bonuses.NoBonus;
-       curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 1 = id; 2 = letter; 3 = validation
-       clearCurWorddle();
+       // Worddle
+       curWorddle = new int[BoardWidth][BoardHeight][2]; // Pour l'indice 2 : 0 = lettre; 1 = validation
+       previousCoords = new int[2];
+       
        addKeyListener(new TAdapter());
        addMouseListener(new MouseManager());
-       clearBoard();
        
-       newBonus();
+       setDifficulty();
+       clearBoard();
     }
     
     // Verifie si la piece a fini de tomber
@@ -275,7 +280,6 @@ public class Board extends JPanel implements ActionListener {
     //Menu game Over
     public void gameOver() {
     	clearBoard();
-    	
     	sound.stop();
     	PlaySound soundGameOver = new PlaySound("gameover");
 		if(isSound) soundGameOver.play();
@@ -294,10 +298,35 @@ public class Board extends JPanel implements ActionListener {
         MenuButton.buttonClose(gameover, 440);
     }
     
+	//Menu jeu termine
+    public void endGame() {
+    	clearBoard();    	
+    	sound.stop();
+    	timer.stop();
+    	timerBonus.stop();
+    	curPiece.setShape(Tetrominoes.NoShape);
+    	
+    	PlaySound soundEndGame = new PlaySound("gagne");
+		if(isSound) soundEndGame.play();
+		
+	    picture.setVisible(false);
+
+    	ImageIcon bgBreak = new ImageIcon(this.getClass().getResource("/pictures/gagne.jpg"));         
+   	 	
+    	endgame = new JLabel(new ImageIcon(bgBreak.getImage()));
+    	endgame.setSize(525, 700);
+	    add(endgame);
+	    endgame.setVisible(true);
+        
+        MenuButton.buttonNewGame(endgame, 280);
+        MenuButton.buttonMenu(endgame,360);        
+        MenuButton.buttonClose(endgame, 440);
+    }
+    
     public void buildInterface(){
     	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
-    	File fichierConfig = new File("conf/conf.properties"); 
+    	File fichierConfig = new File("src/conf/conf.properties"); 
     	
     	// Chargement du fichier de configuration
     	try {
@@ -307,8 +336,8 @@ public class Board extends JPanel implements ActionListener {
     		System.out.println("Echec chargement");
     	}
 
-   	    configUniv = options.getProperty("Univers"); 
-   	    
+   	    configUniv = options.getProperty("Univers");
+   	    System.out.println(configUniv);
    	 	ii = new ImageIcon(this.getClass().getResource("/pictures/"+configUniv+".jpg"));   	 	
         picture = new JLabel(new ImageIcon(ii.getImage()));
         picture.setSize(525, 700);
@@ -355,14 +384,14 @@ public class Board extends JPanel implements ActionListener {
         });
         
         Font font = new Font("Arial",Font.BOLD,22);
-        Font font_level = new Font("Arial",Font.BOLD,36);
+        Font font_level = new Font("Arial",Font.BOLD,22);
         
         // On affiche le score
         printScore = new PrintText(Integer.toString(0), 40, 55, font, Color.white, picture);
         // On affiche le level
-        printLevel = new PrintText(Integer.toString(1), 310, 582, font_level, Color.white, picture);        
+        printLevel = new PrintText(Integer.toString(1), 290, 593, font_level, Color.white, picture);        
         // On affiche le nombre de ligne
-        printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.white, picture);    
+        printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.black, picture);    
     }
     
     // Dessine tous les objets
@@ -422,9 +451,11 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void clearBoard() {
+    	score = 0;
         for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
             board[i] = Tetrominoes.NoShape;
         }
+        clearCurWorddle();
         curBonus.setBonus(Bonuses.NoBonus);
         activeBonus = Bonuses.NoBonus;
         curLine = -1;
@@ -447,6 +478,40 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
+    private void bonusCollision(){    	
+		if (curBonus.getBonus() != Bonuses.NoBonus) {
+	    	// Verifie la collision entre la piece qui tombe et le bonus
+	    	for(int i = 0; i < 4; i++) {
+		    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
+		        //System.out.println("Bonus : (" + curBonus.x() + ";" + curBonus.y() + ")");
+		        if((curX + curPiece.x(i)) == curBonus.x() && (curY + curPiece.y(i)) == curBonus.y()) {
+		        	System.out.println(curBonus.getBonus());
+		        	picture.remove(labelBonus);
+		        	applyBonus(curBonus.getBonus());
+		            curBonus.setBonus(Bonuses.NoBonus);
+		            break;
+		        }
+	        }
+	    	
+	    	// Verifie la collision entre les pieces en bas et le bonus
+	    	for (int i = 0; i < BoardHeight; ++i) {
+	            for (int j = 0; j < BoardWidth; ++j) {
+	            	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
+	                if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
+	                	 //curBonus = new Bonus();
+	                	curBonus.setBonus(Bonuses.NoBonus);
+	                }
+	            }
+	        }
+	    } else {
+	    	Random r = new Random();
+	    	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
+	    	if(x == 1 && activeBonus == Bonuses.NoBonus) {
+	    		newBonus();
+	    	}
+	    }
+	}
+
     private void newPiece() {
 		curPiece.setRandomShape();
         curPiece.setRandomLetters();
@@ -460,12 +525,15 @@ public class Board extends JPanel implements ActionListener {
             timer.stop();
             isStarted = false;
             gameOver();
+            //statusbar.setText("game over");
         }
     }
     
     private void newBonus() {
     	curBonus.setRandomBonus();
-    	while(!tryMove(curPiece, curBonus.x(), curBonus.y())) {
+    	curBonus.setRandomX();
+    	curBonus.setRandomY();
+    	while(shapeAt(curBonus.x(), curBonus.y()) != Tetrominoes.NoShape) {
     		curBonus.setRandomX();
         	curBonus.setRandomY();
     	}
@@ -493,53 +561,28 @@ public class Board extends JPanel implements ActionListener {
         	score = 0;
         } else if(score >= 1000) {
         	System.out.println("FELICITATIONS ! Vous avez gagné un Mars !");
+        	endGame();
         }
         printScore.setText(Integer.toString(score)); 	
 		printLevel.setText(Integer.toString(level));
     }
     
     private void setSpeed(int newSpeed) {
-    	speed = newSpeed;
-    	System.out.println("vitesse : " + speed);
+    	if(newSpeed < 50) {
+    		speed = 50;
+    	} else {
+    		speed = newSpeed;
+    	}
+    	//System.out.println("vitesse : " + speed);
         timer.setDelay(speed);
     }
     
     private void updateSpeed() {
-    	setSpeed(900 - (level * 60));
+    	setSpeed(1000 - (level * 90));
     }
 
     private boolean tryMove(Shape newPiece, int newX, int newY)
-    {	
-    	if (curBonus.getBonus() != Bonuses.NoBonus) {
-        	// Verifie la collision entre la piece qui tombe et le bonus
-        	for(int i = 0; i < 4; i++) {
-    	    	//System.out.println("Piece : (" + (curX + curPiece.x(i)) + ";" + (curY + curPiece.y(i)) + ")");
-    	        //System.out.println("Bonus : (" + curBonus.x() + ";" + curBonus.y() + ")");
-    	        if((curX + curPiece.x(i)) == curBonus.x() && (curY + curPiece.y(i)) == curBonus.y()) {
-    	        	System.out.println(curBonus.getBonus());
-    	        	picture.remove(labelBonus);
-    	        	applyBonus(curBonus.getBonus());
-    	        	curBonus = new Bonus();
-    	        }
-            }
-        	
-        	// Verifie la collision entre les pieces en bas et le bonus
-        	for (int i = 0; i < BoardHeight; ++i) {
-                for (int j = 0; j < BoardWidth; ++j) {
-                	Tetrominoes shape = shapeAt(j, BoardHeight - i - 1);
-                    if (shape != Tetrominoes.NoShape && curBonus.x() == j && curBonus.y() == i) {
-                    	 curBonus = new Bonus();
-                    }
-                }
-            }
-        } else {
-        	Random r = new Random();
-        	int x = Math.abs(r.nextInt()) % 10; // TODO Changer la frequence d'apparition des bonus
-        	if(x == 1 && activeBonus == Bonuses.NoBonus) {
-        		newBonus();
-        	}
-        }
-    	
+    {  	
     	for (int i = 0; i < 4; ++i) {
             int x = newX + newPiece.x(i);
             int y = newY - newPiece.y(i);
@@ -554,18 +597,16 @@ public class Board extends JPanel implements ActionListener {
         curY = newY;
     	        
         repaint();
+        
+        bonusCollision();
        
         return true;
-    }
-    
-    private void bonusCollision(){
-    	
     }
     
     private void setDifficulty(){
        	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
-    	File fichierConfig = new File("conf/conf.properties"); 
+    	File fichierConfig = new File("src/conf/conf.properties"); 
     	
     	// Chargement du fichier de configuration
     	try {
@@ -653,7 +694,7 @@ public class Board extends JPanel implements ActionListener {
 	    		System.out.println("Le mot est incorrect");
 	    	}
 		}
-		 
+		
 		clearCurWorddle();
 		inputLetters = "";
 		
@@ -822,20 +863,46 @@ public class Board extends JPanel implements ActionListener {
     private void scoreAnagram(String word) {
     	if(word != null && !word.isEmpty()) {
 			// Augmentation du score
-			System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-			System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 20));
+			//System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+			//System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
+			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
     	}
     }
     
     private void scoreWorddle(String word) {
     	if(word != null && !word.isEmpty()) {
+    		int oldScoreWorddle = scoreWorddle;
+    		// Calcul du score
+    		char letter;
+    		for(int i = 0; i < inputLetters.length(); ++i) {
+    			letter = inputLetters.charAt(i);
+    			if(letter == 'k' || letter == 'w' || letter == 'x' ||
+    				letter == 'y' || letter == 'z') {
+    				scoreWorddle += 10;
+    			} else if (letter == 'j' || letter == 'q') {
+    				scoreWorddle += 8;
+    			} else if (letter == 'f' || letter == 'h' || letter == 'v') {
+    				scoreWorddle += 4;
+    			} else if (letter == 'b' || letter == 'c' || letter == 'p') {
+    				scoreWorddle += 3;
+    			} else if (letter == 'd' || letter == 'm' || letter == 'g') {
+    				scoreWorddle += 2;
+    			} else {
+    				scoreWorddle += 1;
+    			}
+    		}
+    		
+    		if(inputLetters.length() > 5 && inputLetters.length() < 8) {
+    			scoreWorddle *= 2;
+    		} else if (inputLetters.length() >= 8 && inputLetters.length() < 11) {
+        		scoreWorddle *= 3;
+    		} else if (inputLetters.length() >= 11) {
+    			scoreWorddle *= 4;
+    		}
+    		
 			// Augmentation du score
-			System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-			System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 10));
-			// TODO updateScore(int ?);
+			System.out.println("Score mot worddle : " + (scoreWorddle - oldScoreWorddle));
     	}
     }
     
@@ -896,7 +963,6 @@ public class Board extends JPanel implements ActionListener {
 				if(curWorddle[newX][newY][1] == 0) {
 					inputLetters += Character.toLowerCase(letterAt(newX,newY));
 					curWorddle[newX][newY][1] = 1;
-					//bricks[newX][newY][2] = 1;
 					previousCoords[0] = newX;
 					previousCoords[1] = newY;
 					
@@ -1014,14 +1080,15 @@ public class Board extends JPanel implements ActionListener {
 	    		case KeyEvent.VK_DOWN:
 	    			oneLineDown();
 	    			break;
-	    		case KeyEvent.VK_ENTER:
-	    			if(activeBonus == Bonuses.Worddle) {
-	    				System.out.println("Entrée en mode Worddle");
-	    				validateWordWorddle(inputLetters);
-	    			} else if(curLine != -1) {
-	    				System.out.println("Entrée en mode Anagramme");
-	    				removeLine(curLine);
-	    			}
+	    		case KeyEvent.VK_ENTER: 
+	    			if(activeBonus == Bonuses.Worddle) { 
+	    				//System.out.println("Entrée en mode Worddle"); 
+	    				validateWordWorddle(inputLetters); 
+	    			} 
+	    			else if(curLine != -1) { 
+	    				//System.out.println("Entrée en mode Anagramme"); 
+	    				removeLine(curLine); 
+	    			} 
 	    			break;
              }
          }

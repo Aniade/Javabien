@@ -32,12 +32,12 @@ public class Preference extends JFrame {
     private ImageIcon select_english_bw, select_english, select_francais, select_francais_bw, select_kungfu, select_kungfu_bw, select_cowboy, select_cowboy_bw, select_pirate, select_pirate_bw, select_batman, select_batman_bw;
 
     public Preference(){  	    	
-    	// création d'une instance de Properties
+    	// Creation d'une instance de Properties
     	final Properties options = new Properties(); 
-    	// Création d'une instance de File pour le fichier de config
-    	File fichierConfig = new File("conf/conf.properties"); 
+    	// Creation d'une instance de File pour le fichier de config
+    	File fichierConfig = new File("src/conf/conf.properties"); 
 
-    	//Chargement du fichier de configuration
+    	// Chargement du fichier de configuration
     	try {
     		options.load(new FileInputStream(fichierConfig));
     	} 
@@ -88,7 +88,7 @@ public class Preference extends JFrame {
             	/*Enregistrer une propriété dans le fichier de configurations */
         	    options.setProperty("Level", "debutant");
     	    	try {
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Preferences");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -123,7 +123,7 @@ public class Preference extends JFrame {
             	/*Enregistrer une propriété dans le fichier de configurations */
         	    options.setProperty("Level", "amateur");
     	    	try {
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Preferences");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -158,7 +158,7 @@ public class Preference extends JFrame {
             	/*Enregistrer une propriété dans le fichier de configurations */
         	    options.setProperty("Level", "expert");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Preferences");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Preferences");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -172,7 +172,7 @@ public class Preference extends JFrame {
 		
         //Affichage des reglages
     	// Récupérer une propriété d'un fichier de configurations
-   	 	String configLevel = options.getProperty("Level"); // Trouve la valeur associée à la clef "Level"
+   	 	String configLevel = options.getProperty("Level"); // Trouve la valeur associee à la clef "Level"
    	 	System.out.println(configLevel);
    	 	
    	 	switch (configLevel)
@@ -238,7 +238,7 @@ public class Preference extends JFrame {
         		bt_batman.setIcon(select_batman_bw);
         	    options.setProperty("Univers", "pirate");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Univers");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Univers");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -275,7 +275,7 @@ public class Preference extends JFrame {
         		bt_batman.setIcon(select_batman_bw);
         	    options.setProperty("Univers", "kungfu");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Univers");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Univers");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -312,7 +312,7 @@ public class Preference extends JFrame {
         		bt_batman.setIcon(select_batman_bw);
         	    options.setProperty("Univers", "western");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Univers");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Univers");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -349,7 +349,7 @@ public class Preference extends JFrame {
         		bt_kungfu.setIcon(select_kungfu_bw);
         	    options.setProperty("Univers", "batman");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Univers");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Univers");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -432,7 +432,7 @@ public class Preference extends JFrame {
         		bt_english.setIcon(select_english_bw);
         	    options.setProperty("Dictionary", "francais");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Dictionary");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Dictionary");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -465,7 +465,7 @@ public class Preference extends JFrame {
         		bt_english.setIcon(select_english);
         	    options.setProperty("Dictionary", "anglais");
     	    	try{
-    	    		options.store(new FileOutputStream("conf/conf.properties"), "Dictionary");
+    	    		options.store(new FileOutputStream("src/conf/conf.properties"), "Dictionary");
     	    	} 
     	    	catch(IOException ex) {
     	    		
@@ -523,6 +523,6 @@ public class Preference extends JFrame {
         setLocationRelativeTo(null);
         setSize(525,700);
         setResizable(false);
-        setVisible(true);      
-    } 
+        setVisible(true);     
+    }
 }
