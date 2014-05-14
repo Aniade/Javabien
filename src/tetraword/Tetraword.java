@@ -2,6 +2,8 @@ package tetraword;
 
 import javax.swing.JFrame;
 
+import frames.MainMenu;
+
 @SuppressWarnings("serial")
 public class Tetraword extends JFrame{
 	

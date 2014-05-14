@@ -27,6 +27,7 @@ import tetraword.Bonus.Bonuses;
 import tetraword.Shape.Tetrominoes;
 import design.MenuButton;
 import design.PrintText;
+import frames.GameFrame;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener {

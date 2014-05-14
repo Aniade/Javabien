@@ -28,11 +28,11 @@ public class PlaySound {
 		sound.stop();
 	}
 		
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 	    PlaySound p = new PlaySound("wrong");
 	    p.play();
 	    PlaySound p1 = new PlaySound("kungfu");
 	    p1.play();
 	    p1.stop();
-	}
+	}*/
 }

@@ -12,8 +12,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import tetraword.GameFrame;
-import tetraword.MainMenu;
+import frames.GameFrame;
+import frames.MainMenu;
 
 
 @SuppressWarnings("serial")

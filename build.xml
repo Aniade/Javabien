@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<project basedir="." default="build" name="javabien">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+    <path id="javabien.classpath">
+        <pathelement location="bin"/>
+    </path>
+		
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+		
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+		
+    <target depends="clean" name="cleanall"/>
+		
+    <target depends="build-subprojects,build-project" name="build"/>
+		
+    <target name="build-subprojects"/>
+		
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="javabien.classpath"/>
+        </javac>
+    </target>
+		
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+		
+    <target name="GameFrame">
+        <java classname="frames.GameFrame" failonerror="true" fork="yes">
+            <classpath refid="javabien.classpath"/>
+        </java>
+    </target>
+		
+    <target name="Preference">
+        <java classname="frames.Preference" failonerror="true" fork="yes">
+            <classpath refid="javabien.classpath"/>
+        </java>
+    </target>
+		
+    <target name="Tetraword">
+        <java classname="tetraword.Tetraword" failonerror="true" fork="yes">
+            <classpath refid="javabien.classpath"/>
+        </java>
+    </target>
+	
+	<!--<target depends="build-subprojects,build-project"  name="create_run_jar">-->
+        <jar destfile="tetraword.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="tetraword.Tetraword"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+	<!--</target>-->
+		
+		<manifest file="MANIFEST.MF">
+	  	    <attribute name="Built-By" value="Emilie Coulombel et Laetitia Riffaud"/>
+	  	    <section name="Tetraword">
+				<attribute name="Specification-Title" value="Projet réalisé en Java"/>
+				<attribute name="Specification-Version" value="1.0"/>
+				<attribute name="Specification-Vendor" value="IMAC"/>
+				<attribute name="Implementation-Version" value="1.0 May 14, 2014"/>
+	  	    </section>
+	  	    <section name="Tetraword">
+				<attribute name="Sealed" value="false"/>
+			</section>
+		</manifest>
+		
+</project>
