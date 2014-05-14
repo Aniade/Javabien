@@ -394,7 +394,19 @@ public class Board extends JPanel implements ActionListener {
         printLine = new PrintText(Integer.toString(0), 40, 140, font, Color.black, picture);    
     }
     
-    // Dessine tous les objets
+    private void printBonus(){    
+		if(activeBonus == Bonuses.NoBonus || activeBonus == Bonuses.BonusScore || activeBonus ==  Bonuses.MalusScore ){
+			printBonus.setIcon(null);
+		}
+		else{
+	    	imgBonus = new ImageIcon(this.getClass().getResource("/pictures/bonus/"+activeBonus+".png"));
+			printBonus.setIcon(imgBonus);
+			printBonus.setBounds(440, 175, 30, 30); 
+		    picture.add(printBonus);
+		}
+	}
+
+	// Dessine tous les objets
     @Override
     public void paint(Graphics g) {   	
     	super.paint(g);    	
@@ -433,7 +445,70 @@ public class Board extends JPanel implements ActionListener {
     	}
     }
 
-    private void dropDown() {
+    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
+		Image image = (curBonus.getImage()).getImage();
+		if(image != null) // Si l'image existe, ...
+			g.drawImage(image, x, y, this); // ... on la dessine
+		else 
+			System.err.println("Impossible de charger l'image du bonus");
+	}
+
+	private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
+	{
+	    //System.out.println("draw square");
+		
+		Color colors[] = { new Color(0, 0, 0), new Color(193, 194, 193), 
+	        new Color(196, 0, 38), new Color(221, 98, 13), 
+	        new Color(255, 220, 0), new Color(51, 166, 167), 
+	        new Color(0, 103, 167), new Color(90, 27, 105)
+	    };
+	    
+		Color color = colors[shape.ordinal()];
+	
+	    g.setColor(color);
+	    g.fillRect(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2);
+	    g.fillRect(x + 1, y + 1, squareWidth() - 1, squareHeight() - 1);
+	    g.fillRect(x + 8, y - 5, (squareWidth() / 2) - 1, squareHeight() / 2);
+	
+	    g.setColor(color.brighter());
+	    g.drawLine(x, y + squareHeight() - 1, x, y);
+	    g.drawLine(x, y, x + squareWidth() - 1, y);
+	
+	    g.setColor(color.darker());
+	    g.drawLine(x + 1, y + squareHeight() - 1,
+	                     x + squareWidth() - 1, y + squareHeight() - 1);
+	    g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
+	                     x + squareWidth() - 1, y + 1);
+	    
+	    // Ecriture de la lettre
+	    g.setColor(color.darker());
+		g.drawString(letter, x + 11, y + 19);
+	
+	}
+
+	private boolean tryMove(Shape newPiece, int newX, int newY)
+	{  	
+		for (int i = 0; i < 4; ++i) {
+	        int x = newX + newPiece.x(i);
+	        int y = newY - newPiece.y(i);
+	        if (x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight)
+	            return false;
+	        if (shapeAt(x, y) != Tetrominoes.NoShape)
+	            return false;
+	    }
+	
+	    curPiece = newPiece;
+	    curX = newX;
+	    curY = newY;
+		        
+	    repaint();
+	    
+	    bonusCollision();
+	
+	    return true;
+	}
+
+	private void dropDown() {
         int newY = curY;
         while (newY > 0) {
             if (!tryMove(curPiece, curX, newY - 1))
@@ -450,35 +525,35 @@ public class Board extends JPanel implements ActionListener {
             pieceDropped();
     }
 
-    private void clearBoard() {
-    	score = 0;
-        for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
-            board[i] = Tetrominoes.NoShape;
-        }
-        clearCurWorddle();
-        curBonus.setBonus(Bonuses.NoBonus);
-        activeBonus = Bonuses.NoBonus;
-        curLine = -1;
-    }
+    private void fallColumn(int x, int y) {
+		// Parcourir toutes les pieces
+	    for (int i = y; i < BoardHeight - 1; ++i) {
+	    		// Suppression de la ligne
+	    		board[(i * BoardWidth) + x] = shapeAt(x, i + 1);
+				bricks[x][i][0] = idAt(x, i + 1);
+				bricks[x][i][1] = letterAt(x, i + 1);
+				bricks[x][i][2] = clickAt(x, i + 1);
+	    }
+	}
 
-    private void pieceDropped() {
-        for (int i = 0; i < 4; ++i) {
-            int x = curX + curPiece.x(i);
-            int y = curY - curPiece.y(i);
-            
-            board[(y * BoardWidth) + x] = curPiece.getShape();
-            bricks[x][y][0] = curPiece.getId(i);
-            bricks[x][y][1] = curPiece.getLetter(i);
-            bricks[x][y][2] = curPiece.getClick(i);
-        }
-        
-        if (!isFallingFinished) {
-        	newPiece();
-        	addPoints(5);
-        }
-    }
+	private void pieceDropped() {
+	    for (int i = 0; i < 4; ++i) {
+	        int x = curX + curPiece.x(i);
+	        int y = curY - curPiece.y(i);
+	        
+	        board[(y * BoardWidth) + x] = curPiece.getShape();
+	        bricks[x][y][0] = curPiece.getId(i);
+	        bricks[x][y][1] = curPiece.getLetter(i);
+	        bricks[x][y][2] = curPiece.getClick(i);
+	    }
+	    
+	    if (!isFallingFinished) {
+	    	newPiece();
+	    	addPoints(5);
+	    }
+	}
 
-    private void bonusCollision(){    	
+	private void bonusCollision(){    	
 		if (curBonus.getBonus() != Bonuses.NoBonus) {
 	    	// Verifie la collision entre la piece qui tombe et le bonus
 	    	for(int i = 0; i < 4; i++) {
@@ -511,6 +586,85 @@ public class Board extends JPanel implements ActionListener {
 	    	}
 	    }
 	}
+
+	private boolean isLineFull(int y) {
+		boolean lineIsFull = true;
+		
+	    // On parcourt toutes les colonnes du jeu
+	    for (int j = 0; j < BoardWidth; ++j) {
+	    	// Si on trouve des cases vides, la ligne n'est pas pleine
+	        if (shapeAt(j, y) == Tetrominoes.NoShape) {
+	            lineIsFull = false;
+	            break;
+	        }
+	    }
+	    
+	    return lineIsFull;
+	}
+
+	private void removeLine(int y) {
+		boolean valid = validateWordAnagram(inputLetters);
+		if(valid && isLineFull(y)) {
+	    	if(isSound) soundRight.play();
+			++numLinesRemoved;
+			printLine.setText(Integer.toString(numLinesRemoved));
+			scoreAnagram(inputLetters);
+	    	// Parcourir toutes les pieces
+	        for (int k = y; k < BoardHeight - 1; ++k) {
+	        	for (int j = 0; j < BoardWidth; ++j) {
+	        		// Suppression de la ligne
+	        		board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
+	    			bricks[j][k][0] = idAt(j, k + 1);
+	    			bricks[j][k][1] = letterAt(j, k + 1);
+	    			bricks[j][k][2] = clickAt(j, k + 1);
+	    			//bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
+	        	}
+	        }
+		}
+		else if(!valid && isLineFull(y)) {
+	    	if(isSound) soundWrong.play();
+	        for (int k = y; k < BoardHeight - 1; ++k) {
+	        	for (int j = 0; j < BoardWidth; ++j) {
+	        		// Les lettres ne sont plus considerees comme deja cliquees
+	        		bricks[j][k][2] = 0;
+	        	}
+	        }
+	    }
+	    
+	    inputLetters = "";
+	    curLine = -1;
+	    
+	    printWord.setText(inputLetters);
+		printWord.setBounds(300,-25, 300, 100);     	
+		picture.add(printWord);
+	}
+
+	private void removeBricksWorddle() {
+		// Parcourir toutes les pieces
+	    for (int i = 0; i < BoardWidth; ++i) {
+	        for (int j = 0; j < BoardHeight - 1; ++j) {
+	        	if(bricks[i][j][2] == 1) {
+	        		fallColumn(i, j);
+	        	}
+	        }
+	    }
+		
+		clearCurWorddle();
+	    inputLetters = "";
+	    curLine = -1;
+	    activeBonus = Bonuses.NoBonus;
+	}
+
+	private void clearBoard() {
+    	score = 0;
+        for (int i = 0; i < BoardHeight * BoardWidth; ++i) {
+            board[i] = Tetrominoes.NoShape;
+        }
+        clearCurWorddle();
+        curBonus.setBonus(Bonuses.NoBonus);
+        activeBonus = Bonuses.NoBonus;
+        curLine = -1;
+    }
 
     private void newPiece() {
 		curPiece.setRandomShape();
@@ -581,28 +735,6 @@ public class Board extends JPanel implements ActionListener {
     	setSpeed(1000 - (level * 90));
     }
 
-    private boolean tryMove(Shape newPiece, int newX, int newY)
-    {  	
-    	for (int i = 0; i < 4; ++i) {
-            int x = newX + newPiece.x(i);
-            int y = newY - newPiece.y(i);
-            if (x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight)
-                return false;
-            if (shapeAt(x, y) != Tetrominoes.NoShape)
-                return false;
-        }
-
-        curPiece = newPiece;
-        curX = newX;
-        curY = newY;
-    	        
-        repaint();
-        
-        bonusCollision();
-       
-        return true;
-    }
-    
     private void setDifficulty(){
        	Properties options = new Properties();     	
     	// Creation d'une instance de File pour le fichier de config
@@ -635,7 +767,198 @@ public class Board extends JPanel implements ActionListener {
  	   	}
     }
     
-    private boolean validateWordAnagram(String word) {
+    private void applyBonus(Bonuses bonusType) {  	        
+		switch (bonusType) {
+			case NoBonus:
+				break;
+			case Worddle:
+				inputLetters = "";
+				activeBonus = Bonuses.Worddle;
+				timerBonus.start();
+				break;
+			case BonusSpeed:
+				activeBonus = Bonuses.BonusSpeed;
+				setSpeed(speed/2);
+				timerBonus.start();
+				break;
+			case MalusSpeed:
+				activeBonus = Bonuses.MalusSpeed;
+				setSpeed(speed*2);
+				timerBonus.start();
+				break;
+			case BonusScore:
+				activeBonus = Bonuses.BonusScore;
+				scoreBonus();
+				break;
+			case MalusScore:
+				activeBonus = Bonuses.MalusScore;
+				scoreBonus();
+				break;
+	    }
+		printBonus();
+	}
+
+	private void anagram (int x, int y) {        
+	    // Conversion des pixels (recuperes au clic) en nombre de cases
+	    // x appartient a [0,9]
+	    // y appartient a [19,0]
+		int newX = (x - BoardLeft) / squareWidth();
+		int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
+		
+		// Verifie si la ligne est pleine
+		if(isLineFull(newY)) {
+			// Verifie si l'utilisateur fait un anagramme sur une nouvelle ligne
+			if(curLine != newY) {
+				System.out.println("Saisie sur une nouvelle ligne");
+				inputLetters = "";
+			}
+			curLine = newY;
+	
+			// On verifie que l'utilisateur clique sur la piece pour la premiere fois
+			if(bricks[newX][newY][2] == 0) {
+				inputLetters += Character.toLowerCase(letterAt(newX,newY));
+				bricks[newX][newY][2] = 1;
+				
+				// Affichage des lettres saisies par l'utilisateur
+				printWord.setText(inputLetters);
+		    	printWord.setBounds(300,-25, 300, 100);     	
+		    	picture.add(printWord);
+			} else {
+				System.err.println("La lettre a deja ete utilisee");
+			}
+		}
+		else {
+			bestAnagram = "";
+			System.err.println("La ligne n'est pas pleine");
+		}
+	}
+
+	private void worddleBonus(int x, int y) {
+		// Conversion des pixels (recuperes au clic) en nombre de cases
+		int newX = (x - BoardLeft) / squareWidth();
+		int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
+		
+		// Verifie si l'utilisateur a deja saisi une lettre
+		if(inputLetters.length() > 0) {   		
+			// Verifie si l'utilisateur clique sur une brique adjacente a la precedente
+			if(((previousCoords[0] + 1) == newX || previousCoords[0] == newX || (previousCoords[0] - 1) == newX) && 
+		       ((previousCoords[1] + 1) == newY || previousCoords[1] == newY || (previousCoords[1] - 1) == newY)) {
+				
+				// Verifie si la brique n'est pas deja utilisee dans le mot
+				if(curWorddle[newX][newY][1] == 0) {
+					inputLetters += Character.toLowerCase(letterAt(newX,newY));
+					curWorddle[newX][newY][1] = 1;
+					previousCoords[0] = newX;
+					previousCoords[1] = newY;
+					
+					// Affichage des lettres saisies par l'utilisateur
+	    			printWord.setText(inputLetters);
+	    	    	printWord.setBounds(300,-25, 300, 100);
+	    			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);  	
+	    	    	picture.add(printWord);
+				} else {
+					System.err.println("La lettre a déjà été utilisée pour ce mot");
+				}
+			} else {
+				// Nouveau mot
+				inputLetters = "";
+				clearCurWorddle();
+				inputLetters += Character.toLowerCase(letterAt(newX,newY));
+				curWorddle[newX][newY][1] = 1;
+				previousCoords[0] = newX;
+				previousCoords[1] = newY;
+				
+				// Affichage des lettres saisies par l'utilisateur
+				printWord.setText(inputLetters);
+		    	printWord.setBounds(300,-25, 300, 100);
+				//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);  	
+		    	picture.add(printWord);
+			}
+		} else {
+			// Nouveau mot
+			inputLetters = "";
+			clearCurWorddle();
+			inputLetters += Character.toLowerCase(letterAt(newX,newY));
+			curWorddle[newX][newY][1] = 1;
+			previousCoords[0] = newX;
+			previousCoords[1] = newY;
+			
+			// Affichage des lettres saisies par l'utilisateur
+			printWord.setText(inputLetters);
+	    	printWord.setBounds(300,-25, 300, 100);
+			//System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);  	
+	    	picture.add(printWord);
+		}
+	}
+
+	private void clearCurWorddle() {
+		for (int i = 0; i < BoardWidth; ++i) {
+	        for (int j = 0; j < BoardHeight; ++j) {
+	        	curWorddle[i][j][1] = 0;
+	        }
+		}
+	}
+
+	private void scoreAnagram(String word) {
+		if(word != null && !word.isEmpty()) {
+			// Augmentation du score
+			//System.out.println("Nombre de lettres saisies : " + inputLetters.length());
+			//System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
+			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
+			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
+		}
+	}
+
+	private void scoreBonus() {
+		Random r = new Random();
+	    int x = (Math.abs(r.nextInt()) % 5 + 1) * 10;
+	    if(activeBonus == Bonuses.BonusScore) {
+	    	System.out.println("Bonus de " + x + " points");
+	        addPoints(x);
+	    } else if (activeBonus == Bonuses.MalusScore) {
+	    	System.out.println("Malus de " + x + " points");
+	        addPoints(-x);
+	    }
+	    activeBonus = Bonuses.NoBonus;
+	}
+
+	private void scoreWorddle(String word) {
+		if(word != null && !word.isEmpty()) {
+			int oldScoreWorddle = scoreWorddle;
+			// Calcul du score
+			char letter;
+			for(int i = 0; i < inputLetters.length(); ++i) {
+				letter = inputLetters.charAt(i);
+				if(letter == 'k' || letter == 'w' || letter == 'x' ||
+					letter == 'y' || letter == 'z') {
+					scoreWorddle += 10;
+				} else if (letter == 'j' || letter == 'q') {
+					scoreWorddle += 8;
+				} else if (letter == 'f' || letter == 'h' || letter == 'v') {
+					scoreWorddle += 4;
+				} else if (letter == 'b' || letter == 'c' || letter == 'p') {
+					scoreWorddle += 3;
+				} else if (letter == 'd' || letter == 'm' || letter == 'g') {
+					scoreWorddle += 2;
+				} else {
+					scoreWorddle += 1;
+				}
+			}
+			
+			if(inputLetters.length() > 5 && inputLetters.length() < 8) {
+				scoreWorddle *= 2;
+			} else if (inputLetters.length() >= 8 && inputLetters.length() < 11) {
+	    		scoreWorddle *= 3;
+			} else if (inputLetters.length() >= 11) {
+				scoreWorddle *= 4;
+			}
+			
+			// Augmentation du score
+			System.out.println("Score mot worddle : " + (scoreWorddle - oldScoreWorddle));
+		}
+	}
+
+	private boolean validateWordAnagram(String word) {
 	    Dictionary dictionary = new Dictionary();
 	    boolean validWord = false;  
 
@@ -705,315 +1028,6 @@ public class Board extends JPanel implements ActionListener {
 		return validWord;
     }
     
-    private boolean isLineFull(int y) {
-    	boolean lineIsFull = true;
-    	
-        // On parcourt toutes les colonnes du jeu
-        for (int j = 0; j < BoardWidth; ++j) {
-        	// Si on trouve des cases vides, la ligne n'est pas pleine
-            if (shapeAt(j, y) == Tetrominoes.NoShape) {
-                lineIsFull = false;
-                break;
-            }
-        }
-        
-        return lineIsFull;
-    }
-    
-    private void removeLine(int y) {
-    	boolean valid = validateWordAnagram(inputLetters);
-    	if(valid && isLineFull(y)) {
-	    	if(isSound) soundRight.play();
-    		++numLinesRemoved;
-    		printLine.setText(Integer.toString(numLinesRemoved));
-			scoreAnagram(inputLetters);
-        	// Parcourir toutes les pieces
-            for (int k = y; k < BoardHeight - 1; ++k) {
-            	for (int j = 0; j < BoardWidth; ++j) {
-            		// Suppression de la ligne
-            		board[(k * BoardWidth) + j] = shapeAt(j, k + 1);
-        			bricks[j][k][0] = idAt(j, k + 1);
-        			bricks[j][k][1] = letterAt(j, k + 1);
-        			bricks[j][k][2] = clickAt(j, k + 1);
-        			//bonus[(k * BoardWidth) + j] = bonusAt(j, k + 1);
-            	}
-            }
-    	}
-    	else if(!valid && isLineFull(y)) {
-	    	if(isSound) soundWrong.play();
-            for (int k = y; k < BoardHeight - 1; ++k) {
-            	for (int j = 0; j < BoardWidth; ++j) {
-            		// Les lettres ne sont plus considerees comme deja cliquees
-            		bricks[j][k][2] = 0;
-            	}
-            }
-        }
-        
-        inputLetters = "";
-        curLine = -1;
-        
-        printWord.setText(inputLetters);
-    	printWord.setBounds(300,-25, 300, 100);     	
-    	picture.add(printWord);
-    }
-    
-    private void removeBricksWorddle() {
-    	// Parcourir toutes les pieces
-        for (int i = 0; i < BoardWidth; ++i) {
-            for (int j = 0; j < BoardHeight - 1; ++j) {
-            	if(bricks[i][j][2] == 1) {
-            		fallColumn(i, j);
-            	}
-            }
-        }
-    	
-    	clearCurWorddle();
-        inputLetters = "";
-        curLine = -1;
-        activeBonus = Bonuses.NoBonus;
-    }
-    
-    private void fallColumn(int x, int y) {
-    	// Parcourir toutes les pieces
-        for (int i = y; i < BoardHeight - 1; ++i) {
-        		// Suppression de la ligne
-        		board[(i * BoardWidth) + x] = shapeAt(x, i + 1);
-    			bricks[x][i][0] = idAt(x, i + 1);
-    			bricks[x][i][1] = letterAt(x, i + 1);
-    			bricks[x][i][2] = clickAt(x, i + 1);
-        }
-    }
-    
-    private void drawBonus(Graphics g, int x, int y, Bonuses bonus) {
-		Image image = (curBonus.getImage()).getImage();
-		if(image != null) // Si l'image existe, ...
-			g.drawImage(image, x, y, this); // ... on la dessine
-		else 
-			System.err.println("Impossible de charger l'image du bonus");
-    }
-    
-    private void drawSquare(Graphics g, int x, int y, Tetrominoes shape, String letter)
-    {
-        //System.out.println("draw square");
-    	
-    	Color colors[] = { new Color(0, 0, 0), new Color(193, 194, 193), 
-            new Color(196, 0, 38), new Color(221, 98, 13), 
-            new Color(255, 220, 0), new Color(51, 166, 167), 
-            new Color(0, 103, 167), new Color(90, 27, 105)
-        };
-        
-    	Color color = colors[shape.ordinal()];
-
-        g.setColor(color);
-        g.fillRect(x + 1, y + 1, squareWidth() - 2, squareHeight() - 2);
-        g.fillRect(x + 1, y + 1, squareWidth() - 1, squareHeight() - 1);
-        g.fillRect(x + 8, y - 5, (squareWidth() / 2) - 1, squareHeight() / 2);
-
-        g.setColor(color.brighter());
-        g.drawLine(x, y + squareHeight() - 1, x, y);
-        g.drawLine(x, y, x + squareWidth() - 1, y);
-
-        g.setColor(color.darker());
-        g.drawLine(x + 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + squareHeight() - 1);
-        g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                         x + squareWidth() - 1, y + 1);
-        
-        // Ecriture de la lettre
-	    g.setColor(color.darker());
-		g.drawString(letter, x + 11, y + 19);
-
-    }
-    
-    private void anagram (int x, int y) {        
-        // Conversion des pixels (recuperes au clic) en nombre de cases
-        // x appartient a [0,9]
-        // y appartient a [19,0]
-    	int newX = (x - BoardLeft) / squareWidth();
-    	int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
-    	
-    	// Verifie si la ligne est pleine
-    	if(isLineFull(newY)) {
-    		// Verifie si l'utilisateur fait un anagramme sur une nouvelle ligne
-    		if(curLine != newY) {
-    			System.out.println("Saisie sur une nouvelle ligne");
-    			inputLetters = "";
-    		}
-    		curLine = newY;
-
-    		// On verifie que l'utilisateur clique sur la piece pour la premiere fois
-    		if(bricks[newX][newY][2] == 0) {
-    			inputLetters += Character.toLowerCase(letterAt(newX,newY));
-    			bricks[newX][newY][2] = 1;
-    			
-    			// Affichage des lettres saisies par l'utilisateur
-    			printWord.setText(inputLetters);
-    	    	printWord.setBounds(300,-25, 300, 100);     	
-    	    	picture.add(printWord);
-    		} else {
-    			System.err.println("La lettre a deja ete utilisee");
-    		}
-    	}
-    	else {
-    		bestAnagram = "";
-    		System.err.println("La ligne n'est pas pleine");
-    	}
-    }
-    
-    private void scoreAnagram(String word) {
-    	if(word != null && !word.isEmpty()) {
-			// Augmentation du score
-			//System.out.println("Nombre de lettres saisies : " + inputLetters.length());
-			//System.out.println("Longueur du meilleur anagramme : " + bestAnagram.length());
-			System.out.println("Score anagramme : " + (int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
-			addPoints((int)((double)inputLetters.length() / (double)bestAnagram.length() * 30));
-    	}
-    }
-    
-    private void scoreWorddle(String word) {
-    	if(word != null && !word.isEmpty()) {
-    		int oldScoreWorddle = scoreWorddle;
-    		// Calcul du score
-    		char letter;
-    		for(int i = 0; i < inputLetters.length(); ++i) {
-    			letter = inputLetters.charAt(i);
-    			if(letter == 'k' || letter == 'w' || letter == 'x' ||
-    				letter == 'y' || letter == 'z') {
-    				scoreWorddle += 10;
-    			} else if (letter == 'j' || letter == 'q') {
-    				scoreWorddle += 8;
-    			} else if (letter == 'f' || letter == 'h' || letter == 'v') {
-    				scoreWorddle += 4;
-    			} else if (letter == 'b' || letter == 'c' || letter == 'p') {
-    				scoreWorddle += 3;
-    			} else if (letter == 'd' || letter == 'm' || letter == 'g') {
-    				scoreWorddle += 2;
-    			} else {
-    				scoreWorddle += 1;
-    			}
-    		}
-    		
-    		if(inputLetters.length() > 5 && inputLetters.length() < 8) {
-    			scoreWorddle *= 2;
-    		} else if (inputLetters.length() >= 8 && inputLetters.length() < 11) {
-        		scoreWorddle *= 3;
-    		} else if (inputLetters.length() >= 11) {
-    			scoreWorddle *= 4;
-    		}
-    		
-			// Augmentation du score
-			System.out.println("Score mot worddle : " + (scoreWorddle - oldScoreWorddle));
-    	}
-    }
-    
-    private void printBonus(){    
-		if(activeBonus == Bonuses.NoBonus || activeBonus == Bonuses.BonusScore || activeBonus ==  Bonuses.MalusScore ){
-			printBonus.setIcon(null);
-		}
-		else{
-	    	imgBonus = new ImageIcon(this.getClass().getResource("/pictures/bonus/"+activeBonus+".png"));
-			printBonus.setIcon(imgBonus);
-			printBonus.setBounds(440, 175, 30, 30); 
-		    picture.add(printBonus);
-		}
-    }
-    
-    private void applyBonus(Bonuses bonusType) {  	        
-    	switch (bonusType) {
-			case NoBonus:
-				break;
-			case Worddle:
-				inputLetters = "";
-				activeBonus = Bonuses.Worddle;
-				timerBonus.start();
-				break;
-			case BonusSpeed:
-				activeBonus = Bonuses.BonusSpeed;
-				setSpeed(speed/2);
-				timerBonus.start();
-				break;
-			case MalusSpeed:
-				activeBonus = Bonuses.MalusSpeed;
-				setSpeed(speed*2);
-				timerBonus.start();
-				break;
-			case BonusScore:
-				activeBonus = Bonuses.BonusScore;
-				scoreBonus();
-				break;
-			case MalusScore:
-				activeBonus = Bonuses.MalusScore;
-				scoreBonus();
-				break;
-	    }
-    	printBonus();
-    }
-
-	private void worddleBonus(int x, int y) {
-		// Conversion des pixels (recuperes au clic) en nombre de cases
-    	int newX = (x - BoardLeft) / squareWidth();
-    	int newY = (BoardHeight - 1) - ((y - BoardTop) / squareHeight());
-    	
-    	// Verifie si l'utilisateur a deja saisi une lettre
-    	if(inputLetters.length() > 0) {    		
-    		// Verifie si l'utilisateur clique sur une brique adjacente a la precedente
-    		if(((previousCoords[0] + 1) == newX || previousCoords[0] == newX || (previousCoords[0] - 1) == newX) && 
-		       ((previousCoords[1] + 1) == newY || previousCoords[1] == newY || (previousCoords[1] - 1) == newY)) {
-				// Verifie si la brique n'est pas deja utilisee dans le mot
-				if(curWorddle[newX][newY][1] == 0) {
-					inputLetters += Character.toLowerCase(letterAt(newX,newY));
-					curWorddle[newX][newY][1] = 1;
-					previousCoords[0] = newX;
-					previousCoords[1] = newY;
-					
-					// Affichage des lettres saisies par l'utilisateur
-	    			printWord.setText(inputLetters);
-	    	    	printWord.setBounds(300,-25, 300, 100);     	
-	    	    	picture.add(printWord);
-				} else {
-					System.err.println("La lettre a déjà été utilisée pour ce mot");
-				}
-			} else {
-				// Nouveau mot
-				System.out.println("Nouveau mot");
-				inputLetters = "";
-				clearCurWorddle();
-				inputLetters += Character.toLowerCase(letterAt(newX,newY));
-				curWorddle[newX][newY][1] = 1;
-				previousCoords[0] = newX;
-				previousCoords[1] = newY;
-				System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
-			}
-    	} else {
-    		inputLetters += Character.toLowerCase(letterAt(newX,newY));
-			bricks[newX][newY][2] = 1;
-			previousCoords[0] = newX;
-			previousCoords[1] = newY;
-			System.out.println("Les lettres saisies jusqu'a l'instant sont " + inputLetters);
-    	}
-	}
-	
-	private void clearCurWorddle() {
-		for (int i = 0; i < BoardWidth; ++i) {
-            for (int j = 0; j < BoardHeight; ++j) {
-            	curWorddle[i][j][1] = 0;
-            }
-		}
-	}
-
-	private void scoreBonus() {
-    	Random r = new Random();
-        int x = (Math.abs(r.nextInt()) % 5 + 1) * 10;
-        if(activeBonus == Bonuses.BonusScore) {
-        	System.out.println("Bonus de " + x + " points");
-            addPoints(x);
-        } else if (activeBonus == Bonuses.MalusScore) {
-        	System.out.println("Malus de " + x + " points");
-            addPoints(-x);
-        }
-        activeBonus = Bonuses.NoBonus;
-	}
-	
     class MouseManager implements MouseListener
     {
 		@Override
